@@ -1,3 +1,4 @@
+import torch
 import pickle
 from pathlib import Path
 
@@ -11,7 +12,7 @@ N_CLASSES = 100
 IMG_SIZE = 32
 
 ### ImageNet 1000
-DATA_DIR = "/Users/jongbeomkim/Documents/datasets/imagenet-mini"
+# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/imagenet-mini"
 
 ### Architecture
 PATCH_SIZE = 16
@@ -20,4 +21,13 @@ HIDDEN_DIM = 192
 N_HEADS = 6
 
 ### Training
+SEED = 17
+N_WORKERS = 0
+N_GPUS = torch.cuda.device_count()
+if N_GPUS > 0:
+    DEVICE = torch.device("cuda")
+else:
+    DEVICE = torch.device("cpu")
+MULTI_GPU = False
+AUTOCAST = False
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."

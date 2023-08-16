@@ -6,10 +6,6 @@ from PIL import Image
 from pathlib import Path
 import pickle
 
-import sys
-sys.path.append("/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
-# from importlib import reload
-# reload(sys.modules[config])
 import config
 
 
