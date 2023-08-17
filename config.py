@@ -18,7 +18,7 @@ IMG_SIZE = 32
 ### Architecture
 N_LAYERS = 6
 HIDDEN_DIM = 512
-N_HEADS = 12
+N_HEADS = 8
 PATCH_SIZE = 8
 
 ### Optimizer
