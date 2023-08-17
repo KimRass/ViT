@@ -120,7 +120,7 @@ if __name__ == "__main__":
                 loss.backward()
                 optim.step()
 
-        if (epoch % config.N_PRINT_EPOCHS == 0) or (step == len(train_dl)):
+        if (epoch % config.N_PRINT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             loss = running_loss / (config.N_PRINT_EPOCHS * len(train_dl))
             print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
             print(f"""[ {get_elapsed_time(start_time)} ][ {loss:.3f} ]""")
@@ -128,10 +128,10 @@ if __name__ == "__main__":
             running_loss = 0
             start_time = time()
 
-        if (epoch % config.N_VAL_EPOCHS == 0) or (step == len(train_dl)):
+        if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             validate(test_dl=test_dl, model=model, metric=metric)
 
-        if (epoch % config.N_CKPT_EPOCHS == 0) or (step == len(train_dl)):
+        if (epoch % config.N_CKPT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             save_checkpoint(
                 epoch=epoch,
                 step=step,
