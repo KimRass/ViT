@@ -3,6 +3,7 @@
 
 import torch
 import torch.nn as nn
+from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch.cuda.amp import GradScaler
@@ -24,6 +25,10 @@ model = ViT(
     n_heads=config.N_HEADS,
     n_classes=config.N_CLASSES,
 )
+if config.N_GPUS > 0:
+    model = model.to(config.DEVICE)
+    if config.MULTI_GPU:
+        model = DDP(model)
 
 crit = nn.CrossEntropyLoss()
 
