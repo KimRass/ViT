@@ -28,7 +28,8 @@ model = ViT(
 if config.N_GPUS > 0:
     model = model.to(config.DEVICE)
     if config.MULTI_GPU:
-        model = DDP(model)
+        # model = DDP(model)
+        model = nn.DataParallel(model)
 
 crit = nn.CrossEntropyLoss()
 
