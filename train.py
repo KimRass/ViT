@@ -7,8 +7,10 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch.cuda.amp import GradScaler
+from time import time
 
 import config
+from utils import get_elapsed_time
 from model import ViT, ViTClsHead
 from cifar100 import CIFAR100Dataset
 
