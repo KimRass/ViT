@@ -23,7 +23,6 @@ model = ViT(
     n_layers=config.N_LAYERS,
     hidden_dim=config.HIDDEN_DIM,
     n_heads=config.N_HEADS,
-    n_classes=config.N_CLASSES,
 )
 head = ViTClsHead(hidden_dim=config.HIDDEN_DIM, n_classes=config.N_CLASSES)
 if config.N_GPUS > 0:
