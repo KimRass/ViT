@@ -15,10 +15,10 @@ IMG_SIZE = 32
 # DATA_DIR = "/Users/jongbeomkim/Documents/datasets/imagenet-mini"
 
 ### Architecture
-PATCH_SIZE = 16
 N_LAYERS = 6
-HIDDEN_DIM = 192
-N_HEADS = 6
+HIDDEN_DIM = 512
+N_HEADS = 8
+PATCH_SIZE = 16
 
 ### Training
 SEED = 17
@@ -28,6 +28,6 @@ if N_GPUS > 0:
     DEVICE = torch.device("cuda")
 else:
     DEVICE = torch.device("cpu")
-MULTI_GPU = False
-AUTOCAST = False
+MULTI_GPU = True
+AUTOCAST = True
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."

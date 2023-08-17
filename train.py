@@ -1,12 +1,11 @@
-import sys
-sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
+# import sys
+# sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.optim import Adam
-# from torch.cuda.amp import GradScaler
-from contextlib import nullcontext
+from torch.cuda.amp import GradScaler
 
 import config
 from model import ViT
@@ -35,7 +34,7 @@ BETA2 = 0.999
 WEIGHT_DECAY = 0.1
 optim = Adam(model.parameters(), betas=(BETA1, BETA2), weight_decay=WEIGHT_DECAY)
 
-# scaler = GradScaler()
+scaler = GradScaler()
 
 N_EPOCHS = 100
 
@@ -47,8 +46,8 @@ for epoch in range(1, N_EPOCHS + 1):
         gt = gt.to(config.DEVICE)
 
         with torch.autocast(
-            device_type=config.DEVICE.type, dtype=torch.float16
-        ) if config.AUTOCAST else nullcontext():
+            device_type=config.DEVICE.type, dtype=torch.float16, enabled=True if config.AUTOCAST else False
+        ):
             pred = model(image)
             loss = crit(pred, gt)
             print(f"""{loss.item():.4f}""")
