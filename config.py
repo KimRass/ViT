@@ -17,9 +17,15 @@ IMG_SIZE = 32
 
 ### Architecture
 N_LAYERS = 6
-HIDDEN_DIM = 256
+HIDDEN_DIM = 512
 N_HEADS = 8
 PATCH_SIZE = 8
+
+
+### Optimizer
+BETA1 = 0.9
+BETA2 = 0.999
+WEIGHT_DECAY = 0.1
 
 ### Training
 SEED = 17
@@ -32,8 +38,8 @@ else:
 MULTI_GPU = True
 AUTOCAST = True
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
-N_PRINT_STEPS = 1000
-N_CKPT_STEPS = 2000
-N_VAL_STEPS = 2000
-N_EPOCHS = 30
+N_PRINT_EPOCHS = 2
+N_VAL_EPOCHS = 4
+N_CKPT_EPOCHS = 30
+N_EPOCHS = 300
 CKPT_DIR = Path(__file__).parent/"checkpoints"

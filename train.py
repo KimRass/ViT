@@ -89,17 +89,14 @@ if __name__ == "__main__":
 
     # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
     # of 0.1, which we found to be useful for transfer of all models."
-    BETA1 = 0.9
-    BETA2 = 0.999
-    WEIGHT_DECAY = 0.1
-    optim = Adam(model.parameters(), betas=(BETA1, BETA2), weight_decay=WEIGHT_DECAY)
-
+    optim = Adam(model.parameters(), betas=(config.BETA1, config.BETA2), weight_decay=config.WEIGHT_DECAY)
     scaler = GradScaler()
+
+    validate(test_dl=test_dl, model=model, metric=metric)
 
     start_time = time()
     running_loss = 0
     for epoch in range(1, config.N_EPOCHS + 1):
-        running_loss = 0
         for step, (image, gt) in enumerate(train_dl, start=1):
             image = image.to(config.DEVICE)
             gt = gt.to(config.DEVICE)
@@ -123,25 +120,25 @@ if __name__ == "__main__":
                 loss.backward()
                 optim.step()
 
-            if (step % config.N_PRINT_STEPS == 0) or (step == len(train_dl)):
-                running_loss /= config.N_PRINT_STEPS
-                print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
-                print(f"""[ {get_elapsed_time(start_time)} ][ {running_loss:.3f} ]""")
+        if (epoch % config.N_PRINT_EPOCHS == 0) or (step == len(train_dl)):
+            loss = running_loss / (config.N_PRINT_EPOCHS * len(train_dl))
+            print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
+            print(f"""[ {get_elapsed_time(start_time)} ][ {loss:.3f} ]""")
 
-                running_loss = 0
-                start_time = time()
+            running_loss = 0
+            start_time = time()
 
-            if (step % config.N_VAL_STEPS == 0) or (step == len(train_dl)):
-                validate(test_dl=test_dl, model=model, metric=metric)
+        if (epoch % config.N_VAL_EPOCHS == 0) or (step == len(train_dl)):
+            validate(test_dl=test_dl, model=model, metric=metric)
 
-            # if (step % config.N_CKPT_STEPS == 0) or (step == len(train_dl)):
-            #     save_checkpoint(
-            #         epoch=epoch,
-            #         step=step,
-            #         model=model,
-            #         optim=optim,
-            #         scaler=scaler,
-            #         save_path=config.CKPT_DIR/f"""{epoch}_{step}.pth""",
-            #     )
-            #     print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
-            #     print(f""" and step {step:,}/{len(train_dl):,}.""")
+        if (epoch % config.N_CKPT_EPOCHS == 0) or (step == len(train_dl)):
+            save_checkpoint(
+                epoch=epoch,
+                step=step,
+                model=model,
+                optim=optim,
+                scaler=scaler,
+                save_path=config.CKPT_DIR/f"""{epoch}_{step}.pth""",
+            )
+            print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
+            print(f""" and step {step:,}/{len(train_dl):,}.""")
