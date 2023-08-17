@@ -39,7 +39,7 @@ if N_GPUS > 0:
 else:
     DEVICE = torch.device("cpu")
 MULTI_GPU = True
-AUTOCAST = True
+AUTOCAST = False
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
 N_PRINT_EPOCHS = 2
 N_VAL_EPOCHS = 4
