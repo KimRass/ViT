@@ -16,6 +16,8 @@ from model import ViT, ViTClsHead
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 
+torch.autograd.set_detect_anomaly(True)
+
 
 def save_checkpoint(epoch, step, model, optim, scaler, save_path):
     Path(save_path).parent.mkdir(parents=True, exist_ok=True)
