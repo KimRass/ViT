@@ -69,6 +69,7 @@ if __name__ == "__main__":
 
     scaler = GradScaler()
 
+    start_time = time()
     running_loss = 0
     for epoch in range(1, config.N_EPOCHS + 1):
         running_loss = 0
