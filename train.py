@@ -14,6 +14,7 @@ import config
 from utils import get_elapsed_time
 from model import ViT, ViTClsHead
 from cifar100 import CIFAR100Dataset
+from evaluate import TopKAccuracy
 
 
 def save_checkpoint(epoch, step, model, optim, scaler, save_path):
@@ -33,20 +34,20 @@ def save_checkpoint(epoch, step, model, optim, scaler, save_path):
     torch.save(ckpt, str(save_path))
 
 
-def validate(test_dl, model, crit):
+def validate(test_dl, model, metric):
     model.eval()
     with torch.no_grad():
-        sum_loss = 0
+        sum_acc = 0
         for image, gt in test_dl:
             image = image.to(config.DEVICE)
             gt = gt.to(config.DEVICE)
 
             out = model(image)
             pred = head(out)
-            loss = crit(pred, gt)
-            sum_loss += loss.item()
-    avg_loss = sum_loss / len(test_dl)
-    print(f"""Average cross entropy loss: {avg_loss:.3f}""")
+            acc = metric(pred=pred, gt=gt)
+            sum_acc += acc
+    avg_acc = sum_acc / len(test_dl)
+    print(f"""Average accuracy: {avg_acc:.3f}""")
 
     model.train()
 
@@ -84,6 +85,7 @@ if __name__ == "__main__":
             head = nn.DataParallel(head)
 
     crit = nn.CrossEntropyLoss()
+    metric = TopKAccuracy(k=5)
 
     # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
     # of 0.1, which we found to be useful for transfer of all models."
@@ -130,7 +132,7 @@ if __name__ == "__main__":
                 start_time = time()
 
             if (step % config.N_VAL_STEPS == 0) or (step == len(train_dl)):
-                validate(test_dl=test_dl, model=model, crit=crit)
+                validate(test_dl=test_dl, model=model, metric=metric)
 
             # if (step % config.N_CKPT_STEPS == 0) or (step == len(train_dl)):
             #     save_checkpoint(
