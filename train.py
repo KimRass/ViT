@@ -9,7 +9,7 @@ from torch.optim import Adam
 from torch.cuda.amp import GradScaler
 
 import config
-from model import ViT
+from model import ViT, ViTClsHead
 from cifar100 import CIFAR100Dataset
 
 print(config.DEVICE)
@@ -25,11 +25,14 @@ model = ViT(
     n_heads=config.N_HEADS,
     n_classes=config.N_CLASSES,
 )
+head = ViTClsHead(hidden_dim=config.HIDDEN_DIM, n_classes=config.N_CLASSES)
 if config.N_GPUS > 0:
     model = model.to(config.DEVICE)
+    head = head.to(config.DEVICE)
     if config.MULTI_GPU:
         # model = DDP(model)
         model = nn.DataParallel(model)
+        head = nn.DataParallel(head)
 
 crit = nn.CrossEntropyLoss()
 
@@ -42,10 +45,8 @@ optim = Adam(model.parameters(), betas=(BETA1, BETA2), weight_decay=WEIGHT_DECAY
 
 scaler = GradScaler()
 
-N_EPOCHS = 100
-
 running_loss = 0
-for epoch in range(1, N_EPOCHS + 1):
+for epoch in range(1, config.N_EPOCHS + 1):
     running_loss = 0
     for step, (image, gt) in enumerate(train_dl, start=1):
         image = image.to(config.DEVICE)
@@ -54,9 +55,9 @@ for epoch in range(1, N_EPOCHS + 1):
         with torch.autocast(
             device_type=config.DEVICE.type, dtype=torch.float16, enabled=True if config.AUTOCAST else False
         ):
-            pred = model(image)
+            out = model(image)
+            pred = head(out)
             loss = crit(pred, gt)
-            print(f"""{loss.item():.4f}""")
         running_loss += loss.item()
 
         optim.zero_grad()
@@ -67,3 +68,8 @@ for epoch in range(1, N_EPOCHS + 1):
         else:
             loss.backward()
             optim.step()
+
+        if (step % config.N_PRINT_STEPS == 0) or (step == len(train_dl)):
+            running_loss /= config.N_PRINT_STEPS
+            print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
+            print(f"""[ {running_loss.item():.3f} ]""")

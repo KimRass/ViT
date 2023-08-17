@@ -143,7 +143,6 @@ class ViT(nn.Module):
         n_layers=12,
         hidden_dim=768,
         n_heads=12,
-        n_classes=1000
     ):
         super().__init__()
 
@@ -152,7 +151,6 @@ class ViT(nn.Module):
         self.n_layers = n_layers
         self.hidden_dim = hidden_dim
         self.n_heads = n_heads
-        self.n_classes = n_classes
 
         assert img_size % patch_size == 0,\
             "`img_size` must be divisible by `patch_size`!"
@@ -160,7 +158,7 @@ class ViT(nn.Module):
         grid_size = img_size // patch_size
         n_patches = grid_size ** 2
 
-        # $\textbf{E}$ in the equation 1 of the paper
+        # $\textbf{E}$ of the equation 1 in the paper
         self.patch_embed = PatchEmbedding(patch_size=patch_size, hidden_dim=hidden_dim)
 
         self.cls_token = nn.Parameter(torch.randn((1, 1, hidden_dim))) # $x_{\text{class}}$
@@ -168,10 +166,6 @@ class ViT(nn.Module):
         self.dropout = nn.Dropout(0.5)
 
         self.tf_enc = TransformerEncoder(n_layers=n_layers, hidden_dim=hidden_dim, n_heads=n_heads)
-
-        self.ln = nn.LayerNorm(hidden_dim)
-
-        self.mlp = nn.Linear(hidden_dim, n_classes)
 
     def forward(self, x):
         b, _, _, _ = x.shape
@@ -183,9 +177,19 @@ class ViT(nn.Module):
 
         x = self.tf_enc(x)
 
-        x = x[:, 0] # $z^{0}_{L}$ in the equation 4 of the paper
-        x = self.ln(x) # $y$
+        return x
 
+
+class ViTClsHead(nn.Module):
+    def __init__(self, hidden_dim, n_classes=1000):
+        super().__init__()
+
+        self.ln = nn.LayerNorm(hidden_dim)
+        self.mlp = nn.Linear(hidden_dim, n_classes)
+
+    def forward(self, x):
+        x = x[:, 0] # $z^{0}_{L}$ of the equation 4 in the paper
+        x = self.ln(x) # $y$
         x = self.mlp(x)
         return x
 
