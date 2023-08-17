@@ -33,6 +33,24 @@ def save_checkpoint(epoch, step, model, optim, scaler, save_path):
     torch.save(ckpt, str(save_path))
 
 
+def validate(test_dl, model, crit):
+    model.eval()
+    with torch.no_grad():
+        sum_loss = 0
+        for image, gt in test_dl:
+            image = image.to(config.DEVICE)
+            gt = gt.to(config.DEVICE)
+
+            out = model(image)
+            pred = head(out)
+            loss = crit(pred, gt)
+            sum_loss += loss.item()
+    avg_loss = sum_loss / len(test_dl)
+    print(f"""Average cross entropy loss: {avg_loss:.3f}""")
+
+    model.train()
+
+
 if __name__ == "__main__":
     print(f"""AUTOCAST = {config.AUTOCAST}""")
     print(f"""N_WORKES = {config.N_WORKERS}""")
@@ -40,7 +58,14 @@ if __name__ == "__main__":
     print(f"""DEVICE = {config.DEVICE}""")
 
     train_ds = CIFAR100Dataset(config.DATA_DIR, split="train")
-    train_dl = DataLoader(train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True)
+    train_dl = DataLoader(
+        train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True
+    )
+
+    test_ds = CIFAR100Dataset(config.DATA_DIR, split="test")
+    test_dl = DataLoader(
+        test_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True
+    )
 
     model = ViT(
         img_size=config.IMG_SIZE,
@@ -104,14 +129,17 @@ if __name__ == "__main__":
                 running_loss = 0
                 start_time = time()
 
-            if step % config.N_CKPT_STEPS == 0:
-                save_checkpoint(
-                    epoch=epoch,
-                    step=step,
-                    model=model,
-                    optim=optim,
-                    scaler=scaler,
-                    save_path=config.CKPT_DIR/f"""{epoch}_{step}.pth""",
-                )
-                print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
-                print(f""" and step {step:,}/{len(train_dl):,}.""")
+            if (step % config.N_VAL_STEPS == 0) or (step == len(train_dl)):
+                validate(test_dl=test_dl, model=model, crit=crit)
+
+            # if (step % config.N_CKPT_STEPS == 0) or (step == len(train_dl)):
+            #     save_checkpoint(
+            #         epoch=epoch,
+            #         step=step,
+            #         model=model,
+            #         optim=optim,
+            #         scaler=scaler,
+            #         save_path=config.CKPT_DIR/f"""{epoch}_{step}.pth""",
+            #     )
+            #     print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
+            #     print(f""" and step {step:,}/{len(train_dl):,}.""")

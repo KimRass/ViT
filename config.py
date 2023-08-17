@@ -32,8 +32,8 @@ else:
 MULTI_GPU = True
 AUTOCAST = True
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
-# BATCH_SIZE = 16 # "All models are trained with a batch size of 4096."
 N_PRINT_STEPS = 1000
 N_CKPT_STEPS = 2000
+N_VAL_STEPS = 2000
 N_EPOCHS = 30
 CKPT_DIR = Path(__file__).parent/"checkpoints"
