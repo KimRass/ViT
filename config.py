@@ -18,9 +18,8 @@ IMG_SIZE = 32
 ### Architecture
 N_LAYERS = 6
 HIDDEN_DIM = 512
-N_HEADS = 8
+N_HEADS = 12
 PATCH_SIZE = 8
-
 
 ### Optimizer
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
@@ -29,7 +28,7 @@ LR = 0.01
 BETA1 = 0.9
 BETA2 = 0.999
 # WEIGHT_DECAY = 0.1 # In the paper
-WEIGHT_DECAY = 0.0001 # In my case
+WEIGHT_DECAY = 0.01 # In my case
 
 ### Training
 SEED = 17
