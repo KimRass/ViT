@@ -87,9 +87,12 @@ if __name__ == "__main__":
     crit = nn.CrossEntropyLoss()
     metric = TopKAccuracy(k=5)
 
-    # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
-    # of 0.1, which we found to be useful for transfer of all models."
-    optim = Adam(model.parameters(), betas=(config.BETA1, config.BETA2), weight_decay=config.WEIGHT_DECAY)
+    optim = Adam(
+        model.parameters(),
+        lr=config.LR,
+        betas=(config.BETA1, config.BETA2),
+        weight_decay=config.WEIGHT_DECAY,
+    )
     scaler = GradScaler()
 
     validate(test_dl=test_dl, model=model, metric=metric)

@@ -23,9 +23,12 @@ PATCH_SIZE = 8
 
 
 ### Optimizer
+# "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
+# of 0.1, which we found to be useful for transfer of all models."
 BETA1 = 0.9
 BETA2 = 0.999
-WEIGHT_DECAY = 0.1
+# WEIGHT_DECAY = 0.1 # In the paper
+WEIGHT_DECAY = 0.0001 # In my case
 
 ### Training
 SEED = 17
