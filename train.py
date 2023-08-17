@@ -71,4 +71,4 @@ for epoch in range(1, config.N_EPOCHS + 1):
         if (step % config.N_PRINT_STEPS == 0) or (step == len(train_dl)):
             running_loss /= config.N_PRINT_STEPS
             print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
-            print(f"""[ {running_loss.item():.3f} ]""")
+            print(f"""[ {running_loss:.3f} ]""")
