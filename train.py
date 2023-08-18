@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     optim = Adam(
         model.parameters(),
-        lr=config.LR,
+        lr=config.BASE_LR,
         betas=(config.BETA1, config.BETA2),
         weight_decay=config.WEIGHT_DECAY,
     )
