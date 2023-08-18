@@ -22,3 +22,8 @@ if __name__ == "__main__":
     pred = torch.randn(16, 100)
     gt = torch.argmax(pred, dim=1)
     metric(pred, gt)
+
+    crit = nn.CrossEntropyLoss()
+    crit(pred, gt)
+    pred
+    gt

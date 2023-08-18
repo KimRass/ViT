@@ -18,16 +18,20 @@ IMG_SIZE = 32
 
 ### Architecture
 DROP_PROB = 0.1
-N_LAYERS = 6
-HIDDEN_DIM = 512
-N_HEADS = 8
-PATCH_SIZE = 8
+# N_LAYERS = 6
+# HIDDEN_DIM = 512
+# N_HEADS = 8
+# PATCH_SIZE = 8
+N_LAYERS = 12
+HIDDEN_DIM = 768
+N_HEADS = 12
+PATCH_SIZE = 16
 
 ### Optimizer
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
 # of 0.1, which we found to be useful for transfer of all models."
-LR = 0.01
-# BASE_LR = 3e-3
+# LR = 0.01
+BASE_LR = 3e-3
 BETA1 = 0.9
 BETA2 = 0.999
 WEIGHT_DECAY = 0.3
@@ -42,7 +46,7 @@ if N_GPUS > 0:
 else:
     DEVICE = torch.device("cpu")
 MULTI_GPU = True
-AUTOCAST = False
+AUTOCAST = True
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
 N_PRINT_EPOCHS = 2
 N_VAL_EPOCHS = 4
