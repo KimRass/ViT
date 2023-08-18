@@ -6,6 +6,10 @@ from PIL import Image
 from pathlib import Path
 
 
+ds = ImageFolder("/Users/jongbeomkim/Documents/datasets/imagenet-mini/train")
+len(ds.classes)
+len(ds)
+ds[10300][0].show()
 # class CIFAR100Dataset(Dataset):
 #     def __init__(self, data_dir, split="train"):
 #         super().__init__()
