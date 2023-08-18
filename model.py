@@ -3,114 +3,127 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from einops import rearrange
+
+import config
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, patch_size, hidden_dim):
+    def __init__(self, patch_size, hidden_dim, drop_prob=config.DROP_PROB):
         super().__init__()
 
         self.patch_size = patch_size
-        self.hidden_dim = hidden_dim
-        dim = patch_size ** 2 * 3
+        dim = (patch_size ** 2) * 3
 
         self.norm1 = nn.LayerNorm(dim)
         self.proj = nn.Linear(dim, hidden_dim)
+        self.drop = nn.Dropout(drop_prob)
         self.norm2 = nn.LayerNorm(hidden_dim)
 
     def forward(self, x):
         x = rearrange(
-            x, pattern="b c (gh p1) (gw p2) -> b (gh gw) (p1 p2 c)", p1=self.patch_size, p2=self.patch_size
+            x,
+            pattern="b c (h p1) (w p2) -> b (h w) (p1 p2 c)",
+            p1=self.patch_size,
+            p2=self.patch_size,
         )
         x = self.norm1(x) # Not in the paper
         x = self.proj(x)
+        # "Dropout is applied after every dense layer except for the the qkv-projections
+        # and directly after adding positional- to patch embeddings."
+        x = self.drop(x)
         x = self.norm2(x) # Not in the paper
         return x
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, hidden_dim, n_heads):
+    def __init__(self, hidden_dim, n_heads, drop_prob=config.DROP_PROB):
         super().__init__()
-    
-        self.hidden_dim = hidden_dim
+
         self.n_heads = n_heads
 
         self.head_dim = hidden_dim // n_heads
+        # "U_{qkv} \in \mathbb{R}^{D \times 3D_{h}}"
+        self.qkv_proj = nn.Linear(hidden_dim, 3 * n_heads * self.head_dim, bias=False)
+        self.attn_drop = nn.Dropout(drop_prob)
+        self.out_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
 
-        self.w_q = nn.Linear(hidden_dim, hidden_dim, bias=False)
-        self.w_k = nn.Linear(hidden_dim, hidden_dim, bias=False)
-        self.w_v = nn.Linear(hidden_dim, hidden_dim, bias=False)
+    def _get_attention_score(self, q, k):
+        # "$qk^{T}$"
+        attn_score = torch.einsum("bhnd,bhmd->bhnm", q, k)
+        return attn_score
 
-        self.softmax = nn.Softmax(dim=2)
-        self.dropout = nn.Dropout(0.1)
-        self.w_o = nn.Linear(hidden_dim, hidden_dim, bias=False)
-
-    def forward(self, q, k, v):
-        b, l, _ = q.shape
-        _, m, _ = k.shape
-
-        q, k, v = self.w_q(q), self.w_k(k), self.w_v(v)
-        q = q.view(b, l, self.head_dim, self.n_heads)
-        k = k.view(b, m, self.head_dim, self.n_heads)
-        v = v.view(b, m, self.head_dim, self.n_heads)
-
-        attn_score = torch.einsum("bldn,bmdn->blmn", q, k)
-        attn_score /= (self.head_dim ** 0.5)
-
-        attn_weight = self.softmax(attn_score)
-        attn_weight = self.dropout(attn_weight)
-
-        x = torch.einsum("blmn,bmdn->bldn", attn_weight, k)
-        x = rearrange(x, pattern="b l d n -> b l (d n)")
-
-        x = self.w_o(x)
+    def forward(self, x):
+        # "$[q, k, v] = zU_{qkv}$"
+        q, k, v = torch.split(
+            self.qkv_proj(x), split_size_or_sections=self.n_heads * self.head_dim, dim=2,
+        )
+        q = rearrange(q, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_dim)
+        k = rearrange(k, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_dim)
+        v = rearrange(v, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_dim)
+        attn_score = self._get_attention_score(q=q, k=k)
+        # "$A = softmax(qk^{T}/\sqrt{D_{h}}), A \in \mathbb{R}^{N \times N}$"
+        attn_weight = F.softmax(attn_score / (self.head_dim ** 0.5), dim=3)
+        # attn_weight = self.attn_drop(attn_weight)
+        x = torch.einsum("bhnm,bhmd->bhnd", attn_weight, v)
+         # "$U_{msa} \in \mathbb{R}^{k \cdot D_{h} \times D}$"
+        x = rearrange(x, pattern="b h n d -> b n (h d)")
+        x = self.out_proj(x)
+        # "Dropout is applied after every dense layer except for the the qkv-projections
+        # and directly after adding positional- to patch embeddings."
+        x = self.attn_drop(x)
         return x
 
 
-class PositionwiseFeedForward(nn.Module):
+class ResidualConnection(nn.Module):
     def __init__(self, hidden_dim):
         super().__init__()
 
-        self.hidden_dim = hidden_dim
-        self.mlp_dim = hidden_dim * 4
+        self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
 
-        self.w1 = nn.Linear(hidden_dim, self.mlp_dim)
-        self.gelu = nn.GELU()
-        self.w2 = nn.Linear(self.mlp_dim, hidden_dim)
-        self.dropout = nn.Dropout(0.1)
-
-    def forward(self, x):
-        x = self.w1(x)
-        x = self.gelu(x)
-        x = self.w2(x)
-        x = self.dropout(x)
+    def forward(self, x, sublayer):
+        skip = x.clone()
+        x = sublayer(x)
+        x += skip
+        x = self.norm(x)
         return x
 
 
-class EncoderLayer(nn.Module):
+class MLP(nn.Module):
+    def __init__(self, hidden_dim):
+        super().__init__()
+
+        self.mlp_dim = hidden_dim * 4
+
+        self.proj1 = nn.Linear(hidden_dim, self.mlp_dim)
+        self.proj2 = nn.Linear(self.mlp_dim, hidden_dim)
+        self.drop = nn.Dropout(0.1)
+
+    def forward(self, x):
+        x = self.proj1(x)
+        # "Dropout is applied after every dense layer except for the the qkv-projections
+        # and directly after adding positional- to patch embeddings."
+        x = self.drop(x)
+        x = F.gelu(x) # "The MLP contains two layers with a GELU non-linearity."
+        x = self.proj2(x)
+        x = self.drop(x)
+        x = F.gelu(x)
+        return x
+
+
+class TransformerEncoderLayer(nn.Module):
     def __init__(self, hidden_dim, n_heads):
         super().__init__()
 
-        self.hidden_dim = hidden_dim
-        self.n_heads = n_heads
-
         self.self_attn = MultiHeadAttention(hidden_dim=hidden_dim, n_heads=n_heads)
-        self.norm1 = nn.LayerNorm(hidden_dim)
-
-        self.ff = PositionwiseFeedForward(hidden_dim=hidden_dim)
-        self.norm2 = nn.LayerNorm(hidden_dim)
-
-        self.dropout = nn.Dropout(0.1)
+        self.self_attn_resid = ResidualConnection(hidden_dim=hidden_dim)
+        self.mlp = MLP(hidden_dim=hidden_dim)
+        self.mlp_resid = ResidualConnection(hidden_dim=hidden_dim)
 
     def forward(self, x):
-        attn_output = self.self_attn(q=x, k=x, v=x)
-        x += attn_output
-        x = self.norm1(x)
-
-        ff_output = self.ff(x)
-        x += ff_output
-        x = self.norm2(x)
-        x = self.dropout(x)
+        x = self.self_attn_resid(x=x, sublayer=self.self_attn)
+        x = self.mlp_resid(x=x, sublayer=self.mlp)
         return x
 
 
@@ -118,12 +131,8 @@ class TransformerEncoder(nn.Module):
     def __init__(self, n_layers, hidden_dim, n_heads):
         super().__init__()
 
-        self.n_heads = n_heads
-        self.hidden_dim = hidden_dim
-        self.n_layers = n_layers
-
         self.enc_stack = nn.ModuleList(
-            [EncoderLayer(hidden_dim=hidden_dim, n_heads=n_heads) for _ in range(n_layers)]
+            [TransformerEncoderLayer(hidden_dim=hidden_dim, n_heads=n_heads) for _ in range(n_layers)]
         )
 
     def forward(self, x):
@@ -143,28 +152,21 @@ class ViT(nn.Module):
         n_layers=12,
         hidden_dim=768,
         n_heads=12,
+        drop_prob=config.DROP_PROB,
     ):
         super().__init__()
 
-        self.img_size = img_size
-        self.patch_size = patch_size
-        self.n_layers = n_layers
-        self.hidden_dim = hidden_dim
-        self.n_heads = n_heads
+        assert img_size % patch_size == 0, "`img_size` must be divisible by `patch_size`!"
 
-        assert img_size % patch_size == 0,\
-            "`img_size` must be divisible by `patch_size`!"
-
-        grid_size = img_size // patch_size
-        n_patches = grid_size ** 2
+        cell_size = img_size // patch_size
+        n_patches = cell_size ** 2
 
         # $\textbf{E}$ of the equation 1 in the paper
         self.patch_embed = PatchEmbedding(patch_size=patch_size, hidden_dim=hidden_dim)
-
         self.cls_token = nn.Parameter(torch.randn((1, 1, hidden_dim))) # $x_{\text{class}}$
-        self.pos_embed = nn.Parameter(torch.randn((1, n_patches + 1, hidden_dim))) # $\textbf{E}_\text{pos}$
-        self.dropout = nn.Dropout(0.5)
-
+         # $\textbf{E}_\text{pos}$
+        self.pos_embed = nn.Parameter(torch.randn((1, n_patches + 1, hidden_dim)))
+        self.drop = nn.Dropout(drop_prob)
         self.tf_enc = TransformerEncoder(n_layers=n_layers, hidden_dim=hidden_dim, n_heads=n_heads)
 
     def forward(self, x):
@@ -173,37 +175,45 @@ class ViT(nn.Module):
         x = self.patch_embed(x)
         x = torch.cat((self.cls_token.repeat(b, 1, 1), x), dim=1)
         x += self.pos_embed
-        x = self.dropout(x) # Not in the paper
-
+        # "Dropout is applied after every dense layer except for the the qkv-projections
+        # and directly after adding positional- to patch embeddings."
+        x = self.drop(x)
         x = self.tf_enc(x)
-
         return x
 
 
-class ViTClsHead(nn.Module):
-    def __init__(self, hidden_dim, n_classes=1000):
+class ViTClassificationHead(nn.Module):
+    def __init__(self, hidden_dim, n_classes=1000, drop_prob=config.DROP_PROB):
         super().__init__()
 
-        self.ln = nn.LayerNorm(hidden_dim)
-        self.mlp = nn.Linear(hidden_dim, n_classes)
+        self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
+        self.proj = nn.Linear(hidden_dim, n_classes)
+        self.drop = nn.Dropout(drop_prob)
 
     def forward(self, x):
-        x = x[:, 0] # $z^{0}_{L}$ of the equation 4 in the paper
-        x = self.ln(x) # $y$
-        x = self.mlp(x)
+        x = x[:, 0, :] # $z^{0}_{L}$ of the equation 4 in the paper
+        x = self.norm(x) # $y$
+        x = self.proj(x)
+        # "Dropout is applied after every dense layer except for the the qkv-projections
+        # and directly after adding positional- to patch embeddings."
+        x = self.drop(x)
         return x
 
 
 if __name__ == "__main__":
-    # image = torch.randn((4, 3, 32, 32))
+    image = torch.randn((4, 3, 32, 32))
     vit = ViT(
         img_size=32,
         patch_size=16,
         n_layers=6,
         hidden_dim=192,
         n_heads=6,
-        n_classes=100
     )
-    output = vit(image)
-    pred = torch.argmax(output, dim=1)
-    pred
+    head = ViTClassificationHead(hidden_dim=192, n_classes=100)
+    out = vit(image)
+    print(out.shape)
+    out = head(out)
+    print(out.shape)
+
+
+# "we optimize three basic regularization parameters – weight decay, dropout, and label smoothing. Figure"
