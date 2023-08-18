@@ -12,6 +12,13 @@ class TopKAccuracy(nn.Module):
         b, _ = pred.shape
 
         _, topk = torch.topk(pred, k=self.k, dim=1)
-        corr = torch.eq(topk, gt.unsqueeze(1).repeat(1, 5))
+        corr = torch.eq(topk, gt.unsqueeze(1).repeat(1, self.k))
         acc = corr.sum().item() / b
         return acc
+
+
+if __name__ == "__main__":
+    metric = TopKAccuracy(k=5)
+    pred = torch.randn(16, 100)
+    gt = torch.argmax(pred, dim=1)
+    metric(pred, gt)

@@ -182,7 +182,7 @@ class ViT(nn.Module):
         return x
 
 
-class ViTClassificationHead(nn.Module):
+class ClassificationHead(nn.Module):
     def __init__(self, hidden_dim, n_classes=1000, drop_prob=config.DROP_PROB):
         super().__init__()
 
@@ -209,7 +209,7 @@ if __name__ == "__main__":
         hidden_dim=192,
         n_heads=6,
     )
-    head = ViTClassificationHead(hidden_dim=192, n_classes=100)
+    head = ClassificationHead(hidden_dim=192, n_classes=100)
     out = vit(image)
     print(out.shape)
     out = head(out)

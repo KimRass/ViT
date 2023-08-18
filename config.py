@@ -3,8 +3,8 @@ import pickle
 from pathlib import Path
 
 ### CIFAR-100
-DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-100-python/"
-# DATA_DIR = "/home/user/cv/cifar-100-python/"
+# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-100-python/"
+DATA_DIR = "/home/user/cv/cifar-100-python/"
 with open(Path(DATA_DIR)/"meta", mode="rb") as f:
     meta = pickle.load(f, encoding="bytes")
 fine_label_names = meta[b"fine_label_names"]
@@ -14,7 +14,7 @@ IMG_SIZE = 32
 
 ### ImageNet 1000
 # DATA_DIR = "/Users/jongbeomkim/Documents/datasets/imagenet-mini"
-IMG_SIZE = 224 # "All training is done on resolution 224."
+# IMG_SIZE = 224 # "All training is done on resolution 224."
 
 ### Architecture
 DROP_PROB = 0.1
@@ -30,8 +30,8 @@ LR = 0.01
 # BASE_LR = 3e-3
 BETA1 = 0.9
 BETA2 = 0.999
-# WEIGHT_DECAY = 0.3 # In the paper
-WEIGHT_DECAY = 0.01 # In my case
+WEIGHT_DECAY = 0.3
+# WEIGHT_DECAY = 0.1
 
 ### Training
 SEED = 17

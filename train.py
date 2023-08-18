@@ -12,11 +12,11 @@ from pathlib import Path
 
 import config
 from utils import get_elapsed_time
-from model import ViT, ViTClsHead
+from model import ViT, ClassificationHead
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 
-torch.autograd.set_detect_anomaly(True)
+# torch.autograd.set_detect_anomaly(True)
 
 
 def save_checkpoint(epoch, step, model, optim, scaler, save_path):
@@ -77,7 +77,7 @@ if __name__ == "__main__":
         hidden_dim=config.HIDDEN_DIM,
         n_heads=config.N_HEADS,
     )
-    head = ViTClsHead(hidden_dim=config.HIDDEN_DIM, n_classes=config.N_CLASSES)
+    head = ClassificationHead(hidden_dim=config.HIDDEN_DIM, n_classes=config.N_CLASSES)
     if config.N_GPUS > 0:
         model = model.to(config.DEVICE)
         head = head.to(config.DEVICE)
@@ -101,6 +101,7 @@ if __name__ == "__main__":
 
     start_time = time()
     running_loss = 0
+    step_cnt = 0
     for epoch in range(1, config.N_EPOCHS + 1):
         for step, (image, gt) in enumerate(train_dl, start=1):
             image = image.to(config.DEVICE)
@@ -115,6 +116,7 @@ if __name__ == "__main__":
                 pred = head(out)
                 loss = crit(pred, gt)
             running_loss += loss.item()
+            step_cnt += 1
 
             optim.zero_grad()
             if config.AUTOCAST:
@@ -126,11 +128,13 @@ if __name__ == "__main__":
                 optim.step()
 
         if (epoch % config.N_PRINT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
-            loss = running_loss / (config.N_PRINT_EPOCHS * len(train_dl))
+            # loss = running_loss / (config.N_PRINT_EPOCHS * len(train_dl))
+            loss = running_loss / step_cnt
             print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
             print(f"""[ {get_elapsed_time(start_time)} ][ {loss:.3f} ]""")
 
             running_loss = 0
+            step_cnt = 0
             start_time = time()
 
         if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
@@ -145,5 +149,6 @@ if __name__ == "__main__":
                 scaler=scaler,
                 save_path=config.CKPT_DIR/f"""{epoch}_{step}.pth""",
             )
-            print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
-            print(f""" and step {step:,}/{len(train_dl):,}.""")
+            # print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
+            # print(f""" and step {step:,}/{len(train_dl):,}.""")
+            print(f"""Saved checkpoint.""")
