@@ -18,9 +18,19 @@ class CIFAR100Dataset(Dataset):
         self.imgs = data_dic[b"data"]
         self.gts = data_dic[b"fine_labels"]
 
+        kernel_size = round(config.IMG_SIZE * 0.1) // 2 * 2 + 1
         self.transform = T.Compose([
-            T.ToTensor(),
-            T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            T.RandomHorizontalFlip(p=0.5),
+            T.RandomApply(
+                [T.ColorJitter(brightness=0.8, contrast=0.8, saturation=0.8, hue=0.2)],
+                p=0.5,
+            ),
+            T.RandomApply(
+                [T.GaussianBlur(kernel_size=(kernel_size, kernel_size), sigma=(0.1, 2))],
+                p=0.5,
+            ),
+            # T.ToTensor(),
+            # T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
         ])
 
     def __len__(self):
@@ -38,8 +48,11 @@ class CIFAR100Dataset(Dataset):
 
 if __name__ == "__main__":
     ds = CIFAR100Dataset(config.DATA_DIR, split="train")
-    dl = DataLoader(ds, batch_size=4, shuffle=True)
     image, gt = ds[100]
+    image.show()
+    dl = DataLoader(ds, batch_size=1, shuffle=True)
+    di = iter(dl)
+    image, gt = next(di)
     image
     image.show()
     config.CIFAR100_CLASSES[gt]
