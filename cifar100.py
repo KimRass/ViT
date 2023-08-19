@@ -18,7 +18,7 @@ class CIFAR100Dataset(Dataset):
         self.imgs = data_dic[b"data"]
         self.gts = data_dic[b"fine_labels"]
 
-        self.transformer = T.Compose([
+        self.transform = T.Compose([
             T.ToTensor(),
             T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
         ])
@@ -30,7 +30,7 @@ class CIFAR100Dataset(Dataset):
         arr = self.imgs[idx]
         img = arr.reshape(3, config.IMG_SIZE, config.IMG_SIZE).transpose(1, 2, 0)
         image = Image.fromarray(img)
-        image = self.transformer(image)
+        image = self.transform(image)
 
         gt = self.gts[idx]
         return image, gt

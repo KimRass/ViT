@@ -46,7 +46,7 @@ class MultiHeadAttention(nn.Module):
         self.head_dim = hidden_dim // n_heads
         # "U_{qkv} \in \mathbb{R}^{D \times 3D_{h}}"
         self.qkv_proj = nn.Linear(hidden_dim, 3 * n_heads * self.head_dim, bias=False)
-        self.attn_drop = nn.Dropout(drop_prob)
+        self.drop = nn.Dropout(drop_prob)
         self.out_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
 
     def _get_attention_score(self, q, k):
@@ -65,14 +65,14 @@ class MultiHeadAttention(nn.Module):
         attn_score = self._get_attention_score(q=q, k=k)
         # "$A = softmax(qk^{T}/\sqrt{D_{h}}), A \in \mathbb{R}^{N \times N}$"
         attn_weight = F.softmax(attn_score / (self.head_dim ** 0.5), dim=3)
-        # attn_weight = self.attn_drop(attn_weight)
+        # attn_weight = self.drop(attn_weight)
         x = torch.einsum("bhnm,bhmd->bhnd", attn_weight, v)
          # "$U_{msa} \in \mathbb{R}^{k \cdot D_{h} \times D}$"
         x = rearrange(x, pattern="b h n d -> b n (h d)")
         x = self.out_proj(x)
         # "Dropout is applied after every dense layer except for the the qkv-projections
         # and directly after adding positional- to patch embeddings."
-        x = self.attn_drop(x)
+        x = self.drop(x)
         return x
 
 
@@ -97,17 +97,18 @@ class MLP(nn.Module):
         self.mlp_dim = hidden_dim * 4
 
         self.proj1 = nn.Linear(hidden_dim, self.mlp_dim)
+        self.drop1 = nn.Dropout(0.1)
         self.proj2 = nn.Linear(self.mlp_dim, hidden_dim)
-        self.drop = nn.Dropout(0.1)
+        self.drop2 = nn.Dropout(0.1)
 
     def forward(self, x):
         x = self.proj1(x)
         # "Dropout is applied after every dense layer except for the the qkv-projections
         # and directly after adding positional- to patch embeddings."
-        x = self.drop(x)
+        x = self.drop1(x)
         x = F.gelu(x) # "The MLP contains two layers with a GELU non-linearity."
         x = self.proj2(x)
-        x = self.drop(x)
+        x = self.drop2(x)
         x = F.gelu(x)
         return x
 
@@ -153,8 +154,11 @@ class ViT(nn.Module):
         hidden_dim=768,
         n_heads=12,
         drop_prob=config.DROP_PROB,
+        n_classes=0,
     ):
         super().__init__()
+
+        self.n_classes = n_classes
 
         assert img_size % patch_size == 0, "`img_size` must be divisible by `patch_size`!"
 
@@ -166,8 +170,12 @@ class ViT(nn.Module):
         self.cls_token = nn.Parameter(torch.randn((1, 1, hidden_dim))) # $x_{\text{class}}$
          # $\textbf{E}_\text{pos}$
         self.pos_embed = nn.Parameter(torch.randn((1, n_patches + 1, hidden_dim)))
-        self.drop = nn.Dropout(drop_prob)
+        self.drop1 = nn.Dropout(drop_prob)
         self.tf_enc = TransformerEncoder(n_layers=n_layers, hidden_dim=hidden_dim, n_heads=n_heads)
+
+        self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
+        self.proj = nn.Linear(hidden_dim, n_classes)
+        self.drop2 = nn.Dropout(drop_prob)
 
     def forward(self, x):
         b, _, _, _ = x.shape
@@ -177,26 +185,16 @@ class ViT(nn.Module):
         x += self.pos_embed
         # "Dropout is applied after every dense layer except for the the qkv-projections
         # and directly after adding positional- to patch embeddings."
-        x = self.drop(x)
+        x = self.drop1(x)
         x = self.tf_enc(x)
-        return x
 
-
-class ClassificationHead(nn.Module):
-    def __init__(self, hidden_dim, n_classes=1000, drop_prob=config.DROP_PROB):
-        super().__init__()
-
-        self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
-        self.proj = nn.Linear(hidden_dim, n_classes)
-        self.drop = nn.Dropout(drop_prob)
-
-    def forward(self, x):
-        x = x[:, 0, :] # $z^{0}_{L}$ of the equation 4 in the paper
-        x = self.norm(x) # $y$
-        x = self.proj(x)
-        # "Dropout is applied after every dense layer except for the the qkv-projections
-        # and directly after adding positional- to patch embeddings."
-        x = self.drop(x)
+        if self.n_classes != 0:
+            x = x[:, 0, :] # $z^{0}_{L}$ of the equation 4 in the paper
+            x = self.norm(x) # $y$
+            x = self.proj(x)
+            # "Dropout is applied after every dense layer except for the the qkv-projections
+            # and directly after adding positional- to patch embeddings."
+            x = self.drop2(x)
         return x
 
 
@@ -208,11 +206,9 @@ if __name__ == "__main__":
         n_layers=6,
         hidden_dim=192,
         n_heads=6,
+        n_classes=100,
     )
-    head = ClassificationHead(hidden_dim=192, n_classes=100)
     out = vit(image)
-    print(out.shape)
-    out = head(out)
     print(out.shape)
 
 

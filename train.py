@@ -12,7 +12,7 @@ from pathlib import Path
 
 import config
 from utils import get_elapsed_time
-from model import ViT, ClassificationHead
+from model import ViT
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 
@@ -44,8 +44,7 @@ def validate(test_dl, model, metric):
             image = image.to(config.DEVICE)
             gt = gt.to(config.DEVICE)
 
-            out = model(image)
-            pred = head(out)
+            pred = model(image)
             acc = metric(pred=pred, gt=gt)
             sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
@@ -67,7 +66,7 @@ if __name__ == "__main__":
 
     test_ds = CIFAR100Dataset(config.DATA_DIR, split="test")
     test_dl = DataLoader(
-        test_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True
+        test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=False
     )
 
     model = ViT(
@@ -76,15 +75,13 @@ if __name__ == "__main__":
         n_layers=config.N_LAYERS,
         hidden_dim=config.HIDDEN_DIM,
         n_heads=config.N_HEADS,
+        n_classes=config.N_CLASSES,
     )
-    head = ClassificationHead(hidden_dim=config.HIDDEN_DIM, n_classes=config.N_CLASSES)
     if config.N_GPUS > 0:
         model = model.to(config.DEVICE)
-        head = head.to(config.DEVICE)
         if config.MULTI_GPU:
             # model = DDP(model)
             model = nn.DataParallel(model)
-            head = nn.DataParallel(head)
 
     crit = nn.CrossEntropyLoss()
     metric = TopKAccuracy(k=5)
@@ -112,8 +109,7 @@ if __name__ == "__main__":
                 dtype=torch.float16,
                 enabled=True if config.AUTOCAST else False,
             ):
-                out = model(image)
-                pred = head(out)
+                pred = model(image)
                 loss = crit(pred, gt)
             running_loss += loss.item()
             step_cnt += 1
