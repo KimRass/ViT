@@ -7,16 +7,14 @@ from pathlib import Path
 import pickle
 
 import config
+from utils import _get_cifar100_images_and_gts, get_cifar100_mean_and_std
 
 
 class CIFAR100Dataset(Dataset):
     def __init__(self, data_dir, split="train"):
         super().__init__()
 
-        with open(Path(data_dir)/split, mode="rb") as f:
-            data_dic = pickle.load(f, encoding="bytes")
-        self.imgs = data_dic[b"data"]
-        self.gts = data_dic[b"fine_labels"]
+        self.imgs, self.gts = _get_cifar100_images_and_gts(data_dir=data_dir, split=split)
 
         kernel_size = round(config.IMG_SIZE * 0.1) // 2 * 2 + 1
         self.transform = T.Compose([
@@ -29,16 +27,16 @@ class CIFAR100Dataset(Dataset):
                 [T.GaussianBlur(kernel_size=(kernel_size, kernel_size), sigma=(0.1, 2))],
                 p=0.5,
             ),
-            # T.ToTensor(),
-            # T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
+            T.ToTensor(),
+            # get_cifar100_mean_and_std(config.DATA_DIR)
+            T.Normalize(mean=(0.507, 0.487, 0.441), std=(0.267, 0.256, 0.276)),
         ])
 
     def __len__(self):
         return len(self.gts)
 
     def __getitem__(self, idx):
-        arr = self.imgs[idx]
-        img = arr.reshape(3, config.IMG_SIZE, config.IMG_SIZE).transpose(1, 2, 0)
+        img = self.imgs[idx]
         image = Image.fromarray(img)
         image = self.transform(image)
 
