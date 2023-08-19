@@ -83,10 +83,12 @@ class ResidualConnection(nn.Module):
         self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
 
     def forward(self, x, sublayer):
+        # "Layernorm (LN) is applied before every block, and residual connections after every block."
+        # "$z'_{l} = MSA(LN(z_{l - 1})) + z_{l - 1}$", "$z_{l} = MLP(LN(z'_{l})) + z'_{l}$"
         skip = x.clone()
+        x = self.norm(x)
         x = sublayer(x)
         x += skip
-        x = self.norm(x)
         return x
 
 
@@ -103,13 +105,14 @@ class MLP(nn.Module):
 
     def forward(self, x):
         x = self.proj1(x)
+        x = F.gelu(x) # "The MLP contains two layers with a GELU non-linearity."
         # "Dropout is applied after every dense layer except for the the qkv-projections
         # and directly after adding positional- to patch embeddings."
+        # Activation function 다음에 Dropout이 오도록!
         x = self.drop1(x)
-        x = F.gelu(x) # "The MLP contains two layers with a GELU non-linearity."
         x = self.proj2(x)
-        x = self.drop2(x)
         x = F.gelu(x)
+        x = self.drop2(x)
         return x
 
 
@@ -188,8 +191,11 @@ class ViT(nn.Module):
         x = self.drop1(x)
         x = self.tf_enc(x)
 
-        if self.n_classes != 0:
+        if self.n_classes == 0:
+            x = x.mean(dim=1)
+        else:
             x = x[:, 0, :] # $z^{0}_{L}$ of the equation 4 in the paper
+            # "Layernorm (LN) is applied before every block."
             x = self.norm(x) # $y$
             x = self.proj(x)
             # "Dropout is applied after every dense layer except for the the qkv-projections
@@ -203,9 +209,9 @@ if __name__ == "__main__":
     vit = ViT(
         img_size=32,
         patch_size=16,
-        n_layers=6,
+        n_layers=12,
         hidden_dim=192,
-        n_heads=6,
+        n_heads=12,
         n_classes=100,
     )
     out = vit(image)

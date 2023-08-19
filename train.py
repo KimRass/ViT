@@ -17,9 +17,12 @@ from model import ViT
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 
-# torch.autograd.set_detect_anomaly(True)
+torch.set_printoptions(linewidth=200, sci_mode=False)
+# torch.set_printoptions(profile="default")
 
 torch.manual_seed(config.SEED)
+
+# torch.autograd.set_detect_anomaly(True)
 
 
 def save_checkpoint(epoch, step, model, optim, scaler, save_path):
@@ -81,6 +84,7 @@ if __name__ == "__main__":
         n_heads=config.N_HEADS,
         n_classes=config.N_CLASSES,
     )
+    model.train()
     if config.N_GPUS > 0:
         model = model.to(config.DEVICE)
         if config.MULTI_GPU:
@@ -96,8 +100,8 @@ if __name__ == "__main__":
         betas=(config.BETA1, config.BETA2),
         weight_decay=config.WEIGHT_DECAY,
     )
-    if config.AUTOCAST:
-        scaler = GradScaler()
+
+    scaler = GradScaler(enabled=True if config.AUTOCAST else False)
 
     validate(test_dl=test_dl, model=model, metric=metric)
 
@@ -116,9 +120,6 @@ if __name__ == "__main__":
             ):
                 pred = model(image)
                 loss = crit(pred, gt)
-            running_loss += loss.item()
-            step_cnt += 1
-
             optim.zero_grad()
             if config.AUTOCAST:
                 scaler.scale(loss).backward()
@@ -127,6 +128,10 @@ if __name__ == "__main__":
             else:
                 loss.backward()
                 optim.step()
+
+            running_loss += loss.item()
+            print(loss.item())
+            step_cnt += 1
 
         if (epoch % config.N_PRINT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             # loss = running_loss / (config.N_PRINT_EPOCHS * len(train_dl))

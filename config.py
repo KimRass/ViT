@@ -18,14 +18,14 @@ IMG_SIZE = 32
 
 ### Architecture
 DROP_PROB = 0.1
-# N_LAYERS = 6
-# HIDDEN_DIM = 512
-# N_HEADS = 8
-# PATCH_SIZE = 8
-N_LAYERS = 12
-HIDDEN_DIM = 768
-N_HEADS = 12
-PATCH_SIZE = 16
+N_LAYERS = 6
+HIDDEN_DIM = 512
+N_HEADS = 8
+PATCH_SIZE = 8
+# N_LAYERS = 12
+# HIDDEN_DIM = 768
+# N_HEADS = 12
+# PATCH_SIZE = 16
 
 ### Optimizer
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
@@ -40,7 +40,7 @@ WEIGHT_DECAY = 0
 
 ### Training
 SEED = 17
-N_WORKERS = 6
+N_WORKERS = 0
 N_GPUS = torch.cuda.device_count()
 if N_GPUS > 0:
     DEVICE = torch.device("cuda")
@@ -49,7 +49,7 @@ else:
     DEVICE = torch.device("cpu")
     print(f"""Using CPU(s).""")
 MULTI_GPU = True
-AUTOCAST = False
+AUTOCAST = True
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
 # BATCH_SIZE = 256 # For CIFAR-100
 N_PRINT_EPOCHS = 2

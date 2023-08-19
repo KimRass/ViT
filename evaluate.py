@@ -40,4 +40,5 @@ if __name__ == "__main__":
     target
     input.shape, target.shape
     loss(input, target)
+
     
