@@ -70,8 +70,7 @@ if __name__ == "__main__":
         train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True
     )
 
-    # test_ds = CIFAR100Dataset(config.DATA_DIR, split="test")
-    test_ds = CIFAR100Dataset(config.DATA_DIR, split="train")
+    test_ds = CIFAR100Dataset(config.DATA_DIR, split="test")
     test_dl = DataLoader(
         test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=False
     )
