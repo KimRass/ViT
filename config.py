@@ -46,7 +46,7 @@ if N_GPUS > 0:
 else:
     DEVICE = torch.device("cpu")
 MULTI_GPU = True
-AUTOCAST = True
+AUTOCAST = False
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
 # BATCH_SIZE = 256 # For CIFAR-100
 N_PRINT_EPOCHS = 2
