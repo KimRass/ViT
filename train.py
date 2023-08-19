@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     scaler = GradScaler(enabled=True if config.AUTOCAST else False)
 
-    validate(test_dl=test_dl, model=model, metric=metric)
+    # validate(test_dl=test_dl, model=model, metric=metric)
 
     start_time = time()
     running_loss = 0
@@ -130,7 +130,7 @@ if __name__ == "__main__":
                 optim.step()
 
             running_loss += loss.item()
-            print(loss.item())
+            # print(loss.item())
             step_cnt += 1
 
         if (epoch % config.N_PRINT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
