@@ -40,7 +40,7 @@ WEIGHT_DECAY = 0
 
 ### Training
 SEED = 17
-N_WORKERS = 0
+N_WORKERS = 6
 N_GPUS = torch.cuda.device_count()
 if N_GPUS > 0:
     DEVICE = torch.device("cuda")
