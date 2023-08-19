@@ -9,7 +9,7 @@ with open(Path(DATA_DIR)/"meta", mode="rb") as f:
     meta = pickle.load(f, encoding="bytes")
 fine_label_names = meta[b"fine_label_names"]
 CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
-N_CLASSES = 100
+N_CLASSES = len(CIFAR100_CLASSES)
 IMG_SIZE = 32
 
 ### ImageNet 1000
@@ -34,7 +34,7 @@ PATCH_SIZE = 16
 BASE_LR = 3e-3
 BETA1 = 0.9
 BETA2 = 0.999
-WEIGHT_DECAY = 0.3
+# WEIGHT_DECAY = 0.3
 # WEIGHT_DECAY = 0.1
 
 ### Training
@@ -43,8 +43,10 @@ N_WORKERS = 6
 N_GPUS = torch.cuda.device_count()
 if N_GPUS > 0:
     DEVICE = torch.device("cuda")
+    print(f"""Using {N_GPUS} GPU(s).""")
 else:
     DEVICE = torch.device("cpu")
+    print(f"""Using CPU(s).""")
 MULTI_GPU = True
 AUTOCAST = False
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."

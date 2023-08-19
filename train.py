@@ -9,6 +9,7 @@ from torch.optim import Adam
 from torch.cuda.amp import GradScaler
 from time import time
 from pathlib import Path
+from tqdm.auto import tqdm
 
 import config
 from utils import get_elapsed_time
@@ -40,7 +41,7 @@ def validate(test_dl, model, metric):
     model.eval()
     with torch.no_grad():
         sum_acc = 0
-        for image, gt in test_dl:
+        for image, gt in tqdm(test_dl):
             image = image.to(config.DEVICE)
             gt = gt.to(config.DEVICE)
 
@@ -93,7 +94,8 @@ if __name__ == "__main__":
         betas=(config.BETA1, config.BETA2),
         weight_decay=config.WEIGHT_DECAY,
     )
-    scaler = GradScaler()
+    if config.AUTOCAST:
+        scaler = GradScaler()
 
     validate(test_dl=test_dl, model=model, metric=metric)
 
