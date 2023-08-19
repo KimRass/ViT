@@ -24,6 +24,20 @@ if __name__ == "__main__":
     metric(pred, gt)
 
     crit = nn.CrossEntropyLoss()
+    # pred = torch.Tensor([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+    # gt = torch.tensor([0, 1, 2, 3]).long()
+    pred = torch.Tensor([[1, 0, 0, 0], [0, 1, 0, 0]])
+    gt = torch.tensor([0, 1]).long()
+    # pred.shape, gt.shape
     crit(pred, gt)
-    pred
-    gt
+    pred, gt
+    
+    # Example of target with class indices
+    loss = nn.CrossEntropyLoss()
+    input = torch.randn(3, 5, requires_grad=True)
+    # target = torch.empty(3, dtype=torch.long).random_(5)
+    target = torch.randn(3, 5).softmax(dim=1)
+    target
+    input.shape, target.shape
+    loss(input, target)
+    

@@ -19,6 +19,8 @@ from evaluate import TopKAccuracy
 
 # torch.autograd.set_detect_anomaly(True)
 
+torch.manual_seed(config.SEED)
+
 
 def save_checkpoint(epoch, step, model, optim, scaler, save_path):
     Path(save_path).parent.mkdir(parents=True, exist_ok=True)
@@ -85,7 +87,7 @@ if __name__ == "__main__":
             # model = DDP(model)
             model = nn.DataParallel(model)
 
-    crit = nn.CrossEntropyLoss()
+    crit = nn.CrossEntropyLoss(reduction="sum")
     metric = TopKAccuracy(k=5)
 
     optim = Adam(

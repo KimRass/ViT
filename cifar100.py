@@ -2,9 +2,9 @@
 
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
+import torchvision.transforms.functional as TF
+from torchvision.utils import make_grid
 from PIL import Image
-from pathlib import Path
-import pickle
 
 import config
 from utils import _get_cifar100_images_and_gts, get_cifar100_mean_and_std
@@ -16,15 +16,10 @@ class CIFAR100Dataset(Dataset):
 
         self.imgs, self.gts = _get_cifar100_images_and_gts(data_dir=data_dir, split=split)
 
-        kernel_size = round(config.IMG_SIZE * 0.1) // 2 * 2 + 1
         self.transform = T.Compose([
             T.RandomHorizontalFlip(p=0.5),
             T.RandomApply(
-                [T.ColorJitter(brightness=0.8, contrast=0.8, saturation=0.8, hue=0.2)],
-                p=0.5,
-            ),
-            T.RandomApply(
-                [T.GaussianBlur(kernel_size=(kernel_size, kernel_size), sigma=(0.1, 2))],
+                [T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)],
                 p=0.5,
             ),
             T.ToTensor(),
@@ -46,11 +41,12 @@ class CIFAR100Dataset(Dataset):
 
 if __name__ == "__main__":
     ds = CIFAR100Dataset(config.DATA_DIR, split="train")
-    image, gt = ds[100]
-    image.show()
+    # image, gt = ds[100]
+    # image.show()
     dl = DataLoader(ds, batch_size=1, shuffle=True)
     di = iter(dl)
+
     image, gt = next(di)
-    image
-    image.show()
+    grid = make_grid(image, nrow=1, normalize=True)
+    TF.to_pil_image(grid).show()
     config.CIFAR100_CLASSES[gt]
