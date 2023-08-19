@@ -19,9 +19,9 @@ IMG_SIZE = 32
 ### Architecture
 DROP_PROB = 0.1
 N_LAYERS = 6
-HIDDEN_DIM = 512
-N_HEADS = 8
-PATCH_SIZE = 8
+HIDDEN_DIM = 384
+N_HEADS = 6
+PATCH_SIZE = 16
 # N_LAYERS = 12
 # HIDDEN_DIM = 768
 # N_HEADS = 12
@@ -34,8 +34,7 @@ PATCH_SIZE = 8
 BASE_LR = 3e-3
 BETA1 = 0.9
 BETA2 = 0.999
-WEIGHT_DECAY = 0
-# WEIGHT_DECAY = 0.3
+WEIGHT_DECAY = 0.3
 # WEIGHT_DECAY = 0.1
 
 ### Training
@@ -50,8 +49,8 @@ else:
     print(f"""Using CPU(s).""")
 MULTI_GPU = True
 AUTOCAST = True
-BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
-# BATCH_SIZE = 256 # For CIFAR-100
+# BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
+BATCH_SIZE = 8192 # For CIFAR-100
 N_PRINT_EPOCHS = 2
 N_VAL_EPOCHS = 4
 N_CKPT_EPOCHS = 30

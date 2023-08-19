@@ -52,5 +52,9 @@ def get_cifar100_mean_and_std(data_dir, split="train"):
     return mean, std
 
 
+def print_number_of_parameters(model):
+    print(f"""{sum([p.numel() for p in model.parameters()]):,}""")
+
+
 def get_elapsed_time(start_time):
     return timedelta(seconds=round(time() - start_time))
