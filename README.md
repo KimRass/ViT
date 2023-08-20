@@ -31,6 +31,7 @@ HIDDEN_DIM = 384
 N_HEADS = 6
 PATCH_SIZE = 16
 HIDE_AND_SEEK = True
+BATCH_SIZE = 8192
 ```
 - Test set에 대해 Top-5 accuracy 0.547 (420 epochs)
 ```python
@@ -39,6 +40,7 @@ HIDDEN_DIM = 384
 N_HEADS = 6
 PATCH_SIZE = 8
 HIDE_AND_SEEK = True
+BATCH_SIZE = 8192
 ```
 - Test set에 대해 Top-5 accuracy 0.664 (240 epochs)
 ```python
@@ -47,6 +49,7 @@ HIDDEN_DIM = 384
 N_HEADS = 6
 PATCH_SIZE = 4
 HIDE_AND_SEEK = True
+BATCH_SIZE = 4096
 ```
 
 # Research
