@@ -23,13 +23,12 @@ from hide_and_seek import apply_hide_and_seek
 from cutmix import apply_cutmix
 
 torch.set_printoptions(linewidth=200, sci_mode=False)
-# torch.set_printoptions(profile="default")
 torch.manual_seed(config.SEED)
 
 # torch.autograd.set_detect_anomaly(True)
 
 
-def save_checkpoint(epoch, step, model, optim, scaler, save_path):
+def save_checkpoint(epoch, model, optim, scaler, save_path):
     Path(save_path).parent.mkdir(parents=True, exist_ok=True)
 
     ckpt = {
@@ -115,6 +114,7 @@ if __name__ == "__main__":
         init_epoch = ckpt["epoch"]
         optim.load_state_dict(ckpt["optimizer"])
         scaler.load_state_dict(ckpt["scaler"])
+        print(f"""Resuming from checkpoint {config.CKPT_PATH}.""")
 
     start_time = time()
     running_loss = 0
@@ -124,9 +124,10 @@ if __name__ == "__main__":
             image = image.to(config.DEVICE)
             gt = gt.to(config.DEVICE)
 
-            image = apply_hide_and_seek(
-                image, patch_size=config.IMG_SIZE // 4, mean=(0.507, 0.487, 0.441)
-            )
+            if config.HIDE_AND_SEEK:
+                image = apply_hide_and_seek(
+                    image, patch_size=config.IMG_SIZE // 4, mean=(0.507, 0.487, 0.441)
+                )
 
             with torch.autocast(
                 device_type=config.DEVICE.type,
@@ -163,12 +164,9 @@ if __name__ == "__main__":
         if (epoch % config.N_CKPT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             save_checkpoint(
                 epoch=epoch,
-                step=step,
                 model=model,
                 optim=optim,
                 scaler=scaler,
-                save_path=config.CKPT_DIR/f"""{epoch}_{step}.pth""",
+                save_path=config.CKPT_DIR/f"""{epoch}.pth""",
             )
-            # print(f"""Saved checkpoint at epoch {epoch:,}/{config.N_EPOCHS}""")
-            # print(f""" and step {step:,}/{len(train_dl):,}.""")
             print(f"""Saved checkpoint.""")
