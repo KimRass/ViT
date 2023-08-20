@@ -3,12 +3,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as T
-from PIL import Image
 import random
-import numpy as np
-from pathlib import Path
-
-from image_utils import denormalize_array, get_image_grid, save_image
 
 
 def apply_cutmix(image, label):
@@ -34,23 +29,23 @@ def apply_cutmix(image, label):
     return image, label
 
 
-if __name__ == "__main__":
-    transform = T.Compose(
-        [
-            T.ToTensor(),
-            T.Resize((224, 224)),
-            T.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
-        ]
-    )
-    ds = ImageFolder("/Users/jongbeomkim/Downloads/imagenet-mini/val", transform=transform)
-    dl = DataLoader(dataset=ds, batch_size=16, shuffle=True, num_workers=4, drop_last=True)
-    n_classes = len(ds.classes)
-    for batch, (image, label) in enumerate(dl, start=1):
-        label = F.one_hot(label, num_classes=n_classes)
-        cutmixed_image, cutmixed_label = apply_cutmix(image=image, label=label)
-        grid = get_image_grid(cutmixed_image)
+# if __name__ == "__main__":
+#     transform = T.Compose(
+#         [
+#             T.ToTensor(),
+#             T.Resize((224, 224)),
+#             T.Normalize(
+#                 mean=[0.485, 0.456, 0.406],
+#                 std=[0.229, 0.224, 0.225]
+#             )
+#         ]
+#     )
+#     ds = ImageFolder("/Users/jongbeomkim/Downloads/imagenet-mini/val", transform=transform)
+#     dl = DataLoader(dataset=ds, batch_size=16, shuffle=True, num_workers=4, drop_last=True)
+#     n_classes = len(ds.classes)
+#     for batch, (image, label) in enumerate(dl, start=1):
+#         label = F.one_hot(label, num_classes=n_classes)
+#         cutmixed_image, cutmixed_label = apply_cutmix(image=image, label=label)
+#         grid = get_image_grid(cutmixed_image)
 
-        save_image(img=grid, path=f"""/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/image_data_augmentation/cutmix/samples/imagenet_mini{batch}.jpg""")
+#         save_image(img=grid, path=f"""/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/image_data_augmentation/cutmix/samples/imagenet_mini{batch}.jpg""")

@@ -1,3 +1,6 @@
+# References:
+    # https://github.com/omihub777/ViT-CIFAR
+
 # import sys
 # sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
 
