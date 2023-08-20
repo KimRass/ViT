@@ -17,10 +17,10 @@ from model import ViT
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 from hide_and_seek import apply_hide_and_seek
+from cutmix import apply_cutmix
 
 torch.set_printoptions(linewidth=200, sci_mode=False)
 # torch.set_printoptions(profile="default")
-
 torch.manual_seed(config.SEED)
 
 # torch.autograd.set_detect_anomaly(True)
@@ -31,7 +31,6 @@ def save_checkpoint(epoch, step, model, optim, scaler, save_path):
 
     ckpt = {
         "epoch": epoch,
-        "step": step,
         "optimizer": optim.state_dict(),
         "scaler": scaler.state_dict(),
     }
@@ -68,12 +67,12 @@ if __name__ == "__main__":
 
     train_ds = CIFAR100Dataset(config.DATA_DIR, split="train")
     train_dl = DataLoader(
-        train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True
+        train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True,
     )
 
     test_ds = CIFAR100Dataset(config.DATA_DIR, split="test")
     test_dl = DataLoader(
-        test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=False
+        test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=True,
     )
 
     model = ViT(
@@ -103,12 +102,21 @@ if __name__ == "__main__":
 
     scaler = GradScaler(enabled=True if config.AUTOCAST else False)
 
-    # validate(test_dl=test_dl, model=model, metric=metric)
+    ### Resume
+    if config.CKPT_PATH is not None:
+        ckpt = torch.load(config.CKPT_PATH, map_location=config.DEVICE)
+        if config.N_GPUS > 1 and config.MULTI_GPU:
+            model.module.load_state_dict(ckpt["model"])
+        else:
+            model.load_state_dict(ckpt["model"])
+        init_epoch = ckpt["epoch"]
+        optim.load_state_dict(ckpt["optimizer"])
+        scaler.load_state_dict(ckpt["scaler"])
 
     start_time = time()
     running_loss = 0
     step_cnt = 0
-    for epoch in range(1, config.N_EPOCHS + 1):
+    for epoch in range(init_epoch + 1, config.N_EPOCHS + 1):
         for step, (image, gt) in enumerate(train_dl, start=1):
             image = image.to(config.DEVICE)
             gt = gt.to(config.DEVICE)
@@ -140,7 +148,7 @@ if __name__ == "__main__":
             # loss = running_loss / (config.N_PRINT_EPOCHS * len(train_dl))
             loss = running_loss / step_cnt
             print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
-            print(f"""[ {get_elapsed_time(start_time)} ][ {loss:,} ]""")
+            print(f"""[ {get_elapsed_time(start_time)} ][ {int(loss):,} ]""")
 
             running_loss = 0
             step_cnt = 0

@@ -54,5 +54,8 @@ BATCH_SIZE = 8192 # For CIFAR-100
 N_PRINT_EPOCHS = 2
 N_VAL_EPOCHS = 4
 N_CKPT_EPOCHS = 30
-N_EPOCHS = 300
+N_EPOCHS = 500
 CKPT_DIR = Path(__file__).parent/"checkpoints"
+
+### Resume
+CKPT_PATH = CKPT_DIR/"300_6.pth"
