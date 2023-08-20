@@ -61,4 +61,4 @@ N_EPOCHS = 500
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
 ### Resume
-CKPT_PATH = CKPT_DIR/"300_6.pth"
+CKPT_PATH = None
