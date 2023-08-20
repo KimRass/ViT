@@ -38,7 +38,7 @@ WEIGHT_DECAY = 0.3
 # WEIGHT_DECAY = 0.1
 
 ### Regularization
-HIDE_AND_SEEK = False
+HIDE_AND_SEEK = True
 
 ### Training
 SEED = 17
