@@ -53,6 +53,7 @@ else:
 MULTI_GPU = True
 AUTOCAST = True
 BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
+BATCH_SIZE = 2048
 N_PRINT_EPOCHS = 4
 N_VAL_EPOCHS = 8
 N_CKPT_EPOCHS = 30
