@@ -21,11 +21,11 @@ DROP_PROB = 0.1
 N_LAYERS = 6
 HIDDEN_DIM = 384
 N_HEADS = 6
-PATCH_SIZE = 8
 # N_LAYERS = 12
 # HIDDEN_DIM = 768
 # N_HEADS = 12
-# PATCH_SIZE = 16
+PATCH_SIZE = 4
+
 
 ### Optimizer
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay

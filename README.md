@@ -24,6 +24,31 @@ trees	maple, oak, palm, pine, willow
 vehicles 1	bicycle, bus, motorcycle, pickup truck, train
 vehicles 2	lawn-mower, rocket, streetcar, tank, tractor
 
+# Result
+```python
+N_LAYERS = 6
+HIDDEN_DIM = 384
+N_HEADS = 6
+PATCH_SIZE = 16
+HIDE_AND_SEEK = True
+```
+- Test set에 대해 Top-5 accuracy 0.547 (420 epochs)
+```python
+N_LAYERS = 6
+HIDDEN_DIM = 384
+N_HEADS = 6
+PATCH_SIZE = 8
+HIDE_AND_SEEK = True
+```
+- Test set에 대해 Top-5 accuracy 0.664 (240 epochs)
+```python
+N_LAYERS = 6
+HIDDEN_DIM = 384
+N_HEADS = 6
+PATCH_SIZE = 4
+HIDE_AND_SEEK = True
+```
+
 # Research
 ## 23.08.17
 - 
