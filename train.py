@@ -115,6 +115,8 @@ if __name__ == "__main__":
         optim.load_state_dict(ckpt["optimizer"])
         scaler.load_state_dict(ckpt["scaler"])
         print(f"""Resuming from checkpoint {config.CKPT_PATH}.""")
+    else:
+        init_epoch = 0
 
     start_time = time()
     running_loss = 0
