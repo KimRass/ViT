@@ -40,6 +40,19 @@ BETA1 = 0.9
 BETA2 = 0.999
 WEIGHT_DECAY = 0.3
 ```
+- Test set에 대해 Top-5 accuracy 0.670 (240 epochs)
+```python
+N_LAYERS = 6
+HIDDEN_DIM = 192
+N_HEADS = 6
+PATCH_SIZE = 4
+HIDE_AND_SEEK = True
+BATCH_SIZE = 2048
+BASE_LR = 3e-3
+BETA1 = 0.9
+BETA2 = 0.999
+WEIGHT_DECAY = 0.3
+```
 
 # Research
 ## 23.08.17

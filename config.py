@@ -19,7 +19,7 @@ IMG_SIZE = 32
 ### Architecture
 DROP_PROB = 0.1
 N_LAYERS = 6
-HIDDEN_DIM = 384
+HIDDEN_DIM = 192
 N_HEADS = 6
 # N_LAYERS = 12
 # HIDDEN_DIM = 768
@@ -57,7 +57,7 @@ BATCH_SIZE = 2048
 N_PRINT_EPOCHS = 4
 N_VAL_EPOCHS = 8
 N_CKPT_EPOCHS = 30
-N_EPOCHS = 500
+N_EPOCHS = 400
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
 ### Resume
