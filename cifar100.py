@@ -43,7 +43,7 @@ if __name__ == "__main__":
     ds = CIFAR100Dataset(config.DATA_DIR, split="train")
     # image, gt = ds[100]
     # image.show()
-    dl = DataLoader(ds, batch_size=1, shuffle=True)
+    dl = DataLoader(ds, batch_size=4, shuffle=True)
     di = iter(dl)
 
     image, gt = next(di)

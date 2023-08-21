@@ -17,6 +17,7 @@ from tqdm.auto import tqdm
 import config
 from utils import get_elapsed_time
 from model import ViT
+from loss import ClassificationLoss
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 from hide_and_seek import apply_hide_and_seek
@@ -57,8 +58,8 @@ def validate(test_dl, model, metric):
             sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
     print(f"""Average accuracy: {avg_acc:.3f}""")
-
     model.train()
+    return avg_acc
 
 
 if __name__ == "__main__":
@@ -92,8 +93,8 @@ if __name__ == "__main__":
             # model = DDP(model)
             model = nn.DataParallel(model)
 
-    crit = nn.CrossEntropyLoss(reduction="sum")
-    metric = TopKAccuracy(k=5)
+    crit = ClassificationLoss(n_classes=config.N_CLASSES, smoothing=config.SMOOTHING)
+    metric = TopKAccuracy(k=1)
 
     optim = Adam(
         model.parameters(),
@@ -121,6 +122,7 @@ if __name__ == "__main__":
     start_time = time()
     running_loss = 0
     step_cnt = 0
+    best_avg_acc = 0
     for epoch in range(init_epoch + 1, config.N_EPOCHS + 1):
         for step, (image, gt) in enumerate(train_dl, start=1):
             image = image.to(config.DEVICE)
@@ -161,14 +163,16 @@ if __name__ == "__main__":
             start_time = time()
 
         if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
-            validate(test_dl=test_dl, model=model, metric=metric)
+            avg_acc = validate(test_dl=test_dl, model=model, metric=metric)
+            if avg_acc > best_avg_acc:
+                best_avg_acc = avg_acc
 
-        if (epoch % config.N_CKPT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
-            save_checkpoint(
-                epoch=epoch,
-                model=model,
-                optim=optim,
-                scaler=scaler,
-                save_path=config.CKPT_DIR/f"""{epoch}.pth""",
-            )
-            print(f"""Saved checkpoint.""")
+        # if (epoch % config.N_CKPT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
+                save_checkpoint(
+                    epoch=epoch,
+                    model=model,
+                    optim=optim,
+                    scaler=scaler,
+                    save_path=config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{best_avg_acc}.pth""",
+                )
+                print(f"""Saved checkpoint.""")

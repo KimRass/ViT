@@ -3,8 +3,8 @@ import pickle
 from pathlib import Path
 
 ### CIFAR-100
-# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-100-python/"
-DATA_DIR = "/home/user/cv/cifar-100-python/"
+DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-100-python/"
+# DATA_DIR = "/home/user/cv/cifar-100-python/"
 with open(Path(DATA_DIR)/"meta", mode="rb") as f:
     meta = pickle.load(f, encoding="bytes")
 fine_label_names = meta[b"fine_label_names"]
@@ -38,6 +38,7 @@ WEIGHT_DECAY = 0.3
 # WEIGHT_DECAY = 0.1
 
 ### Regularization
+SMOOTHING = 0.1
 HIDE_AND_SEEK = True
 
 ### Training
