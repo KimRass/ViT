@@ -64,7 +64,7 @@ def validate(test_dl, model, metric):
 
 if __name__ == "__main__":
     print(f"""AUTOCAST = {config.AUTOCAST}""")
-    print(f"""N_WORKES = {config.N_WORKERS}""")
+    print(f"""N_WORKERS = {config.N_WORKERS}""")
     print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
     print(f"""DEVICE = {config.DEVICE}""")
 
