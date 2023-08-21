@@ -26,7 +26,6 @@ N_HEADS = 6
 # N_HEADS = 12
 PATCH_SIZE = 4
 
-
 ### Optimizer
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
 # of 0.1, which we found to be useful for transfer of all models."

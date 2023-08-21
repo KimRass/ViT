@@ -55,46 +55,5 @@ WEIGHT_DECAY = 0.3
 ```
 
 # Research
-## 23.08.17
-- 
-```
-/home/user/cv/lib/python3.8/site-packages/torch/autograd/__init__.py:200: UserWarning: Error detected in AddmmBackward0. Traceback of forward call that caused the error:
-  File "/usr/lib/python3.8/threading.py", line 890, in _bootstrap
-    self._bootstrap_inner()
-  File "/usr/lib/python3.8/threading.py", line 932, in _bootstrap_inner
-    self.run()
-  File "/usr/lib/python3.8/threading.py", line 870, in run
-    self._target(*self._args, **self._kwargs)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/parallel/parallel_apply.py", line 64, in _worker
-    output = module(*input, **kwargs)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/user/cv/vit_from_scratch/model.py", line 178, in forward
-    x = self.tf_enc(x)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/user/cv/vit_from_scratch/model.py", line 131, in forward
-    x = enc_layer(x)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/user/cv/vit_from_scratch/model.py", line 110, in forward
-    ff_output = self.ff(x)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/user/cv/vit_from_scratch/model.py", line 83, in forward
-    x = self.w1(x)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
-    return forward_call(*args, **kwargs)
-  File "/home/user/cv/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 114, in forward
-    return F.linear(input, self.weight, self.bias)
- (Triggered internally at ../torch/csrc/autograd/python_anomaly_mode.cpp:114.)
-  Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-Traceback (most recent call last):
-  File "train.py", line 125, in <module>
-    loss.backward()
-  File "/home/user/cv/lib/python3.8/site-packages/torch/_tensor.py", line 487, in backward
-    torch.autograd.backward(
-  File "/home/user/cv/lib/python3.8/site-packages/torch/autograd/__init__.py", line 200, in backward
-    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
-RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.cuda.FloatTensor [34816, 512]], which is output 0 of AsStridedBackward0, is at version 1; expected version 0 instead. Hint: the backtrace further above shows the operation that failed to compute its gradient. The variable in question was changed in there or anywhere later. Good luck!
-```
+## 23.08.20
+- `F.gelu()` → `nn.Dropout()`의 순서가 되도록 Architecture를 변경했습니다. 순서를 반대로 할 경우 미분 값이 0이 되어 학습이 이루어지지 않는 현상이 발생함을 확인했습니다.

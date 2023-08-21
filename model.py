@@ -37,7 +37,7 @@ class PatchEmbedding(nn.Module):
         return x
 
 
-class MultiHeadAttention(nn.Module):
+class MSA(nn.Module):
     def __init__(self, hidden_dim, n_heads, drop_prob=config.DROP_PROB):
         super().__init__()
 
@@ -76,7 +76,7 @@ class MultiHeadAttention(nn.Module):
         return x
 
 
-class ResidualConnection(nn.Module):
+class SkipConnection(nn.Module):
     def __init__(self, hidden_dim):
         super().__init__()
 
@@ -120,10 +120,10 @@ class TransformerEncoderLayer(nn.Module):
     def __init__(self, hidden_dim, n_heads):
         super().__init__()
 
-        self.self_attn = MultiHeadAttention(hidden_dim=hidden_dim, n_heads=n_heads)
-        self.self_attn_resid = ResidualConnection(hidden_dim=hidden_dim)
+        self.self_attn = MSA(hidden_dim=hidden_dim, n_heads=n_heads)
+        self.self_attn_resid = SkipConnection(hidden_dim=hidden_dim)
         self.mlp = MLP(hidden_dim=hidden_dim)
-        self.mlp_resid = ResidualConnection(hidden_dim=hidden_dim)
+        self.mlp_resid = SkipConnection(hidden_dim=hidden_dim)
 
     def forward(self, x):
         x = self.self_attn_resid(x=x, sublayer=self.self_attn)
