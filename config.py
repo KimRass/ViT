@@ -42,7 +42,7 @@ WEIGHT_DECAY = 0.3
 
 ### Regularization
 SMOOTHING = 0.1
-CUTMIX = True
+CUTMIX = False
 HIDE_AND_SEEK = False
 
 ### Training
