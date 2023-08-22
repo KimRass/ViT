@@ -172,7 +172,7 @@ if __name__ == "__main__":
         if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             avg_acc = validate(test_dl=test_dl, model=model, metric=metric)
             if avg_acc > best_avg_acc:
-                cur_save_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(best_avg_acc, 3)}.pth"""
+                cur_save_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(avg_acc, 3)}.pth"""
                 save_checkpoint(
                     epoch=epoch,
                     model=model,
