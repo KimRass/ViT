@@ -122,7 +122,7 @@ if __name__ == "__main__":
         prev_save_path = config.CKPT_PATH
     else:
         init_epoch = 0
-        prev_save_path = ""
+        prev_save_path = None
 
     start_time = time()
     running_loss = 0
@@ -181,7 +181,7 @@ if __name__ == "__main__":
                     save_path=cur_save_path,
                 )
                 prev_save_path = Path(prev_save_path)
-                if prev_save_path.exists():
+                if prev_save_path is not None:
                     prev_save_path.unlink()
                 print(f"""Saved checkpoint.""")
 
