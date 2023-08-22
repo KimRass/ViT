@@ -19,6 +19,7 @@ import config
 from utils import get_elapsed_time
 from model import ViT
 from loss import ClassificationLoss
+from cifar10 import CIFAR10Dataset
 from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 from hide_and_seek import apply_hide_and_seek
@@ -69,12 +70,12 @@ if __name__ == "__main__":
     print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
     print(f"""DEVICE = {config.DEVICE}""")
 
-    train_ds = CIFAR100Dataset(config.DATA_DIR, split="train")
+    train_ds = CIFAR10Dataset(config.DATA_DIR, split="train")
     train_dl = DataLoader(
         train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True,
     )
 
-    test_ds = CIFAR100Dataset(config.DATA_DIR, split="test")
+    test_ds = CIFAR10Dataset(config.DATA_DIR, split="test")
     test_dl = DataLoader(
         test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=True,
     )
