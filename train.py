@@ -46,17 +46,17 @@ def save_checkpoint(epoch, model, optim, scaler, save_path):
     torch.save(ckpt, str(save_path))
 
 
+@torch.no_grad()
 def validate(test_dl, model, metric):
     model.eval()
-    with torch.no_grad():
-        sum_acc = 0
-        for image, gt in tqdm(test_dl):
-            image = image.to(config.DEVICE)
-            gt = gt.to(config.DEVICE)
+    sum_acc = 0
+    for image, gt in tqdm(test_dl):
+        image = image.to(config.DEVICE)
+        gt = gt.to(config.DEVICE)
 
-            pred = model(image)
-            acc = metric(pred=pred, gt=gt)
-            sum_acc += acc
+        pred = model(image)
+        acc = metric(pred=pred, gt=gt)
+        sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
     print(f"""Average accuracy: {avg_acc:.3f}""")
     model.train()
@@ -168,9 +168,6 @@ if __name__ == "__main__":
         if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             avg_acc = validate(test_dl=test_dl, model=model, metric=metric)
             if avg_acc > best_avg_acc:
-                best_avg_acc = avg_acc
-
-        # if (epoch % config.N_CKPT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
                 cur_save_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(best_avg_acc, 3)}.pth"""
                 save_checkpoint(
                     epoch=epoch,
@@ -183,4 +180,5 @@ if __name__ == "__main__":
                     prev_save_path.unlink()
                 print(f"""Saved checkpoint.""")
 
+                best_avg_acc = avg_acc
                 prev_save_path = cur_save_path

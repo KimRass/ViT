@@ -5,7 +5,6 @@ from tqdm.auto import tqdm
 from PIL import Image
 from time import time
 from datetime import timedelta
-import pickle
 
 import config
 
@@ -26,30 +25,6 @@ import config
 #     mean = torch.round(sum_rgb / sum_resol, decimals=3)
 #     std = torch.round((sum_rgb_square / sum_resol - mean ** 2) ** 0.5, decimals=3)
 #     return mean, std
-
-
-def _get_cifar100_images_and_gts(data_dir, split="train", img_size=32):
-    with open(Path(data_dir)/split, mode="rb") as f:
-        data_dic = pickle.load(f, encoding="bytes")
-
-    imgs = data_dic[b"data"]
-    imgs = imgs.reshape(-1, 3, img_size, img_size)
-    imgs = imgs.transpose(0, 2, 3, 1)
-
-    gts = data_dic[b"fine_labels"]
-    return imgs, gts
-
-
-def get_cifar100_mean_and_std(data_dir, split="train"):
-    imgs, _ = _get_cifar100_images_and_gts(data_dir=data_dir, split=split)
-
-    imgs = imgs.astype("float") / 255
-    n_pixels = imgs.size // 3
-    sum_ = imgs.reshape(-1, 3).sum(axis=0)
-    sum_square = (imgs ** 2).reshape(-1, 3).sum(axis=0)
-    mean = (sum_ / n_pixels).round(3)
-    std = (((sum_square / n_pixels) - mean ** 2) ** 0.5).round(3)
-    return mean, std
 
 
 def print_number_of_parameters(model):

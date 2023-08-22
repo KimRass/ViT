@@ -2,19 +2,23 @@ import torch
 import pickle
 from pathlib import Path
 
-### CIFAR-100
-# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-100-python/"
-DATA_DIR = "/home/user/cv/cifar-100-python/"
-with open(Path(DATA_DIR)/"meta", mode="rb") as f:
+### CIFAR-10
+DATA_DIR = "/home/user/cv/cifar-10-batches-py"
+with open(Path(DATA_DIR)/"batches.meta", mode="rb") as f:
     meta = pickle.load(f, encoding="bytes")
-fine_label_names = meta[b"fine_label_names"]
+fine_label_names = meta[b"label_names"]
 CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
 N_CLASSES = len(CIFAR100_CLASSES)
 IMG_SIZE = 32
 
-### ImageNet 1000
-# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/imagenet-mini"
-# IMG_SIZE = 224 # "All training is done on resolution 224."
+### CIFAR-100
+# DATA_DIR = "/home/user/cv/cifar-100-python/"
+# with open(Path(DATA_DIR)/"meta", mode="rb") as f:
+#     meta = pickle.load(f, encoding="bytes")
+# fine_label_names = meta[b"fine_label_names"]
+# CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
+# N_CLASSES = len(CIFAR100_CLASSES)
+# IMG_SIZE = 32
 
 ### Architecture
 DROP_PROB = 0.1
