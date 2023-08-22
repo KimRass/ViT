@@ -55,7 +55,7 @@ def validate(test_dl, model, metric):
         image = image.to(config.DEVICE)
         gt = gt.to(config.DEVICE)
 
-        gt = model(image)
+        pred = model(image)
         acc = metric(pred=pred, gt=gt)
         sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
