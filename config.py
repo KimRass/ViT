@@ -61,7 +61,6 @@ AUTOCAST = True
 BATCH_SIZE = 2048
 N_PRINT_EPOCHS = 4
 N_VAL_EPOCHS = 4
-# N_CKPT_EPOCHS = 30
 N_EPOCHS = 400
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
