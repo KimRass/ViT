@@ -122,7 +122,7 @@ if __name__ == "__main__":
         prev_save_path = config.CKPT_PATH
     else:
         init_epoch = 0
-        prev_save_path = ""
+        prev_save_path = ".pth"
 
     start_time = time()
     running_loss = 0
