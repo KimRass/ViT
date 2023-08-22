@@ -55,7 +55,7 @@ def validate(test_dl, model, metric):
         image = image.to(config.DEVICE)
         gt = gt.to(config.DEVICE)
 
-        pred, gt = model(image)
+        gt = model(image)
         acc = metric(pred=pred, gt=gt)
         sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
@@ -142,6 +142,7 @@ if __name__ == "__main__":
                 dtype=torch.float16,
                 enabled=True if config.AUTOCAST else False,
             ):
+                print(image.shape)
                 pred = model(image)
                 loss = crit(pred, gt)
             optim.zero_grad()
