@@ -6,6 +6,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.optim import Adam
@@ -132,6 +133,8 @@ if __name__ == "__main__":
                 image = apply_hide_and_seek(
                     image, patch_size=config.IMG_SIZE // 4, mean=(0.507, 0.487, 0.441)
                 )
+            if config.CUTMIX:
+                image = apply_cutmix(image=image, label=F.one_hot(gt, num_classes=config.N_CLASSES))
 
             with torch.autocast(
                 device_type=config.DEVICE.type,
@@ -168,11 +171,16 @@ if __name__ == "__main__":
                 best_avg_acc = avg_acc
 
         # if (epoch % config.N_CKPT_EPOCHS == 0) or (epoch == config.N_EPOCHS):
+                cur_save_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(best_avg_acc, 3)}.pth"""
                 save_checkpoint(
                     epoch=epoch,
                     model=model,
                     optim=optim,
                     scaler=scaler,
-                    save_path=config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{best_avg_acc}.pth""",
+                    save_path=cur_save_path,
                 )
+                if prev_save_path.exists():
+                    prev_save_path.unlink()
                 print(f"""Saved checkpoint.""")
+
+                prev_save_path = cur_save_path
