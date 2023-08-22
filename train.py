@@ -135,14 +135,13 @@ if __name__ == "__main__":
                     image, patch_size=config.IMG_SIZE // 4, mean=(0.507, 0.487, 0.441)
                 )
             if config.CUTMIX:
-                image = apply_cutmix(image=image, label=F.one_hot(gt, num_classes=config.N_CLASSES))
+                image, gt = apply_cutmix(image=image, label=F.one_hot(gt, num_classes=config.N_CLASSES))
 
             with torch.autocast(
                 device_type=config.DEVICE.type,
                 dtype=torch.float16,
                 enabled=True if config.AUTOCAST else False,
             ):
-                print(image.shape)
                 pred = model(image)
                 loss = crit(pred, gt)
             optim.zero_grad()
