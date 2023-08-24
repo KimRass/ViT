@@ -1,17 +1,19 @@
 import torch
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
-import torchvision.transforms as T
 import random
+# from torch.utils.data import DataLoader
+# from torchvision.datasets import ImageFolder
+# import torchvision.transforms as T
 
 
-def apply_cutmix(image, label):
+def apply_cutmix(image, gt, n_classes):
+    if gt.ndim == 1:
+        gt = F.one_hot(gt, num_classes=n_classes)
+
     b, _, h, w = image.shape
-
-    order = torch.randperm(b)
-    shuffled_image = image[order]
-    shuffled_label = label[order]
+    indices = torch.randperm(b)
+    image = image[indices]
+    gt = gt[indices]
 
     lamb = random.random()
     region_x = random.randint(0, w)
@@ -23,10 +25,10 @@ def apply_cutmix(image, label):
     xmax = max(w, int(region_x + region_w / 2))
     ymax = max(h, int(region_y + region_h / 2))
 
-    image[:, :, ymin: ymax, xmin: xmax] = shuffled_image[:, :, ymin: ymax, xmin: xmax]
+    image[:, :, ymin: ymax, xmin: xmax] = image[:, :, ymin: ymax, xmin: xmax]
     lamb = 1 - (xmax - xmin) * (ymax - ymin) / (w * h)
-    label = lamb * label + (1 - lamb) * shuffled_label
-    return image, label
+    gt = lamb * gt + (1 - lamb) * gt
+    return image, gt
 
 
 # if __name__ == "__main__":
@@ -43,9 +45,9 @@ def apply_cutmix(image, label):
 #     ds = ImageFolder("/Users/jongbeomkim/Downloads/imagenet-mini/val", transform=transform)
 #     dl = DataLoader(dataset=ds, batch_size=16, shuffle=True, num_workers=4, drop_last=True)
 #     n_classes = len(ds.classes)
-#     for batch, (image, label) in enumerate(dl, start=1):
-#         label = F.one_hot(label, num_classes=n_classes)
-#         cutmixed_image, cutmixed_label = apply_cutmix(image=image, label=label)
+#     for batch, (image, gt) in enumerate(dl, start=1):
+#         gt = F.one_hot(gt, num_classes=n_classes)
+#         cutmixed_image, cutmixed_gt = apply_cutmix(image=image, gt=gt)
 #         grid = get_image_grid(cutmixed_image)
 
 #         save_image(img=grid, path=f"""/Users/jongbeomkim/Desktop/workspace/machine_learning/computer_vision/image_data_augmentation/cutmix/samples/imagenet_mini{batch}.jpg""")

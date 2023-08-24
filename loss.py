@@ -19,9 +19,17 @@ class ClassificationLoss(nn.Module):
         self.crit = nn.CrossEntropyLoss(reduction="sum")
 
     def forward(self, pred, gt):
-        new_gt = torch.full_like(pred, fill_value=self.smoothing / (self.n_classes - 1))
-        new_gt.scatter_(1, gt.unsqueeze(1), 1 - self.smoothing)
-        loss = self.crit(pred, new_gt)
+        if gt.ndim == 1:
+            new_gt = torch.full_like(pred, fill_value=self.smoothing / (self.n_classes - 1))
+            new_gt.scatter_(1, gt.unsqueeze(1), 1 - self.smoothing)
+        elif gt.ndim == 2:
+            new_gt = gt.clone()
+            new_gt.sum(dim=1)
+            new_gt *= (1 - self.smoothing)
+            is_zero = (gt == 0)
+            ll = self.smoothing / (gt.shape[1] - (~is_zero).sum(dim=1))
+            new_gt += is_zero * ll.unsqueeze(1).repeat(1, self.n_classes)
+        loss = crit(pred, new_gt)
         return loss
 
 

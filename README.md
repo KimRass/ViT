@@ -22,6 +22,22 @@ WEIGHT_DECAY = 0.3
 ```
 - Test set에 대해 Top-1 accuracy 0.527 (132 epochs)
 ## CIFAR-10
+```python
+DROP_PROB = 0.1
+N_LAYERS = 6
+HIDDEN_DIM = 192
+N_HEADS = 6
+PATCH_SIZE = 4
+SMOOTHING = 0.1
+CUTMIX = False
+HIDE_AND_SEEK = False
+BATCH_SIZE = 2048
+BASE_LR = 3e-3
+BETA1 = 0.9
+BETA2 = 0.999
+WEIGHT_DECAY = 0.3
+```
+- Test set에 대해 Top-1 accuracy 0.789 (296 epochs)
 <!-- ```python
 N_LAYERS = 6
 HIDDEN_DIM = 384
