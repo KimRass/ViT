@@ -40,6 +40,7 @@ BETA1 = 0.9
 BETA2 = 0.999
 WEIGHT_DECAY = 0.3
 # WEIGHT_DECAY = 0.1
+WARM_UP = 5
 
 ### Regularization
 SMOOTHING = 0.1 # If `0`, do not employ label smoothing

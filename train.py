@@ -11,6 +11,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch.cuda.amp import GradScaler
+from timm.scheduler import CosineLRScheduler
 from time import time
 from pathlib import Path
 from tqdm.auto import tqdm
@@ -106,6 +107,16 @@ if __name__ == "__main__":
         betas=(config.BETA1, config.BETA2),
         weight_decay=config.WEIGHT_DECAY,
     )
+    scheduler = CosineLRScheduler(
+        optimizer=optim,
+        t_initial=config.N_EPOCHS,
+        # lr_min=0,
+        warmup_t=config.WARM_UP,
+        warmup_lr_init=config.BASE_LR / 10,
+        # warmup_prefix=True, # Warmup 부분과 Decay 부분이 자연스럽게 이어집니다.
+        t_in_epochs=True # If `True` the number of iterations is given in terms of epochs
+            # rather than the number of batch updates.
+    )
 
     scaler = GradScaler(enabled=True if config.AUTOCAST else False)
 
@@ -159,6 +170,7 @@ if __name__ == "__main__":
             else:
                 loss.backward()
                 optim.step()
+            scheduler.step_update(num_updates=epoch * len(train_dl))
 
             running_loss += loss.item()
             step_cnt += 1
@@ -191,3 +203,5 @@ if __name__ == "__main__":
 
                 best_avg_acc = avg_acc
                 prev_save_path = cur_save_path
+
+        scheduler.step(epoch + 1)
