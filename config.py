@@ -23,12 +23,13 @@ IMG_SIZE = 32
 
 ### Architecture
 DROP_PROB = 0.1
-N_LAYERS = 6
-HIDDEN_DIM = 192
-N_HEADS = 6
-# N_LAYERS = 12
-# HIDDEN_DIM = 768
-# N_HEADS = 12
+# N_LAYERS = 6
+# HIDDEN_SIZE = 192
+# N_HEADS = 6
+N_LAYERS = 12 # ViT-Base
+HIDDEN_SIZE = 768 # ViT-Base
+MLP_SIZE = 3072 # ViT-Base
+N_HEADS = 12 # ViT-Base
 PATCH_SIZE = 4
 
 ### Optimizer

@@ -3,7 +3,7 @@
 - 해상도 32×32에 대해서
 ```python
 N_LAYERS = 6
-HIDDEN_DIM = 384
+HIDDEN_SIZE = 384
 N_HEADS = 6
 ```
 - 일 때, `PATCH_SIZE = 16`일 때보다 `PATCH_SIZE = 8`일 때, 그리고 `PATCH_SIZE = 4`일 때 성능이 향상됐습니다. (Test set에 대한 Top-5 accuracy가 각각 0.547, 0.664, 0.670, 그리고 각각 420 epochs, 240 epochs, 240 epochs에서 수렴)
@@ -13,7 +13,7 @@ N_HEADS = 6
 - Cosine learning rate schedule (with warm-up)을 사용할 때 학습이 빨라짐을 확인했습니다.
 ```python
 N_LAYERS = 6
-HIDDEN_DIM = 192
+HIDDEN_SIZE = 192
 N_HEADS = 6
 PATCH_SIZE = 4
 HIDE_AND_SEEK = False
@@ -28,7 +28,7 @@ WEIGHT_DECAY = 0.3
 ```python
 DROP_PROB = 0.1
 N_LAYERS = 6
-HIDDEN_DIM = 192
+HIDDEN_SIZE = 192
 N_HEADS = 6
 PATCH_SIZE = 4
 SMOOTHING = 0.1
@@ -41,9 +41,28 @@ BETA2 = 0.999
 WEIGHT_DECAY = 0.3
 ```
 - Test set에 대해 Top-1 accuracy 0.789 (296 epochs)
+```python
+DROP_PROB = 0.1
+N_LAYERS = 6
+HIDDEN_SIZE = 192
+MLP_SIZE = 768
+N_HEADS = 6
+PATCH_SIZE = 4
+CUTMIX = True
+CUTOUT = False
+HIDE_AND_SEEK = False
+BATCH_SIZE = 2048
+BASE_LR = 3e-3
+BETA1 = 0.9
+BETA2 = 0.999
+WEIGHT_DECAY = 0.3
+WARM_UP = 5
+N_EPOCHS = 200
+```
+- Test set에 대해 Top-1 accuracy 0.783 (152 epochs)
 <!-- ```python
 N_LAYERS = 6
-HIDDEN_DIM = 384
+HIDDEN_SIZE = 384
 N_HEADS = 6
 PATCH_SIZE = 16
 HIDE_AND_SEEK = True
@@ -56,7 +75,7 @@ WEIGHT_DECAY = 0.3
 - Test set에 대해 Top-5 accuracy 0.547 (420 epochs)
 ```python
 N_LAYERS = 6
-HIDDEN_DIM = 384
+HIDDEN_SIZE = 384
 N_HEADS = 6
 PATCH_SIZE = 8
 HIDE_AND_SEEK = True
@@ -69,7 +88,7 @@ WEIGHT_DECAY = 0.3
 - Test set에 대해 Top-5 accuracy 0.664 (240 epochs) -->
 <!-- ```python
 N_LAYERS = 6
-HIDDEN_DIM = 384
+HIDDEN_SIZE = 384
 N_HEADS = 6
 PATCH_SIZE = 4
 HIDE_AND_SEEK = True

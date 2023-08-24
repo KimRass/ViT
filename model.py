@@ -10,16 +10,16 @@ import config
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, patch_size, hidden_dim, drop_prob=config.DROP_PROB):
+    def __init__(self, patch_size, hidden_size, drop_prob=config.DROP_PROB):
         super().__init__()
 
         self.patch_size = patch_size
         dim = (patch_size ** 2) * 3
 
         self.norm1 = nn.LayerNorm(dim)
-        self.proj = nn.Linear(dim, hidden_dim)
+        self.proj = nn.Linear(dim, hidden_size)
         self.drop = nn.Dropout(drop_prob)
-        self.norm2 = nn.LayerNorm(hidden_dim)
+        self.norm2 = nn.LayerNorm(hidden_size)
 
     def forward(self, x):
         x = rearrange(
@@ -38,16 +38,16 @@ class PatchEmbedding(nn.Module):
 
 
 class MSA(nn.Module):
-    def __init__(self, hidden_dim, n_heads, drop_prob=config.DROP_PROB):
+    def __init__(self, hidden_size, n_heads, drop_prob=config.DROP_PROB):
         super().__init__()
 
         self.n_heads = n_heads
 
-        self.head_dim = hidden_dim // n_heads
+        self.head_size = hidden_size // n_heads
         # "U_{qkv} \in \mathbb{R}^{D \times 3D_{h}}"
-        self.qkv_proj = nn.Linear(hidden_dim, 3 * n_heads * self.head_dim, bias=False)
+        self.qkv_proj = nn.Linear(hidden_size, 3 * n_heads * self.head_size, bias=False)
         self.drop = nn.Dropout(drop_prob)
-        self.out_proj = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.out_proj = nn.Linear(hidden_size, hidden_size, bias=False)
 
     def _get_attention_score(self, q, k):
         # "$qk^{T}$"
@@ -57,14 +57,14 @@ class MSA(nn.Module):
     def forward(self, x):
         # "$[q, k, v] = zU_{qkv}$"
         q, k, v = torch.split(
-            self.qkv_proj(x), split_size_or_sections=self.n_heads * self.head_dim, dim=2,
+            self.qkv_proj(x), split_size_or_sections=self.n_heads * self.head_size, dim=2,
         )
-        q = rearrange(q, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_dim)
-        k = rearrange(k, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_dim)
-        v = rearrange(v, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_dim)
+        q = rearrange(q, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_size)
+        k = rearrange(k, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_size)
+        v = rearrange(v, pattern="b n (h d) -> b h n d", h=self.n_heads, d=self.head_size)
         attn_score = self._get_attention_score(q=q, k=k)
         # "$A = softmax(qk^{T}/\sqrt{D_{h}}), A \in \mathbb{R}^{N \times N}$"
-        attn_weight = F.softmax(attn_score / (self.head_dim ** 0.5), dim=3)
+        attn_weight = F.softmax(attn_score / (self.head_size ** 0.5), dim=3)
         # attn_weight = self.drop(attn_weight)
         x = torch.einsum("bhnm,bhmd->bhnd", attn_weight, v)
          # "$U_{msa} \in \mathbb{R}^{k \cdot D_{h} \times D}$"
@@ -77,10 +77,10 @@ class MSA(nn.Module):
 
 
 class SkipConnection(nn.Module):
-    def __init__(self, hidden_dim):
+    def __init__(self, hidden_size):
         super().__init__()
 
-        self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
+        self.norm = nn.LayerNorm(hidden_size) # "$LN$"
 
     def forward(self, x, sublayer):
         # "Layernorm (LN) is applied before every block, and residual connections after every block."
@@ -93,14 +93,12 @@ class SkipConnection(nn.Module):
 
 
 class MLP(nn.Module):
-    def __init__(self, hidden_dim):
+    def __init__(self, hidden_size, mlp_size):
         super().__init__()
 
-        self.mlp_dim = hidden_dim * 4
-
-        self.proj1 = nn.Linear(hidden_dim, self.mlp_dim)
+        self.proj1 = nn.Linear(hidden_size, mlp_size)
         self.drop1 = nn.Dropout(0.1)
-        self.proj2 = nn.Linear(self.mlp_dim, hidden_dim)
+        self.proj2 = nn.Linear(mlp_size, hidden_size)
         self.drop2 = nn.Dropout(0.1)
 
     def forward(self, x):
@@ -117,13 +115,13 @@ class MLP(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
-    def __init__(self, hidden_dim, n_heads):
+    def __init__(self, hidden_size, mlp_size, n_heads):
         super().__init__()
 
-        self.self_attn = MSA(hidden_dim=hidden_dim, n_heads=n_heads)
-        self.self_attn_resid = SkipConnection(hidden_dim=hidden_dim)
-        self.mlp = MLP(hidden_dim=hidden_dim)
-        self.mlp_resid = SkipConnection(hidden_dim=hidden_dim)
+        self.self_attn = MSA(hidden_size=hidden_size, n_heads=n_heads)
+        self.self_attn_resid = SkipConnection(hidden_size=hidden_size)
+        self.mlp = MLP(hidden_size=hidden_size, mlp_size=mlp_size)
+        self.mlp_resid = SkipConnection(hidden_size=hidden_size)
 
     def forward(self, x):
         x = self.self_attn_resid(x=x, sublayer=self.self_attn)
@@ -132,11 +130,11 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self, n_layers, hidden_dim, n_heads):
+    def __init__(self, n_layers, hidden_size, n_heads):
         super().__init__()
 
         self.enc_stack = nn.ModuleList(
-            [TransformerEncoderLayer(hidden_dim=hidden_dim, n_heads=n_heads) for _ in range(n_layers)]
+            [TransformerEncoderLayer(hidden_size=hidden_size, n_heads=n_heads) for _ in range(n_layers)]
         )
 
     def forward(self, x):
@@ -146,15 +144,16 @@ class TransformerEncoder(nn.Module):
 
 
 class ViT(nn.Module):
-    # ViT-Base: `n_layers=12, hidden_dim=768, n_heads=12`
-    # ViT-Large: `n_layers=24, hidden_dim=1024, n_heads=16`
-    # ViT-Huge: `n_layers=32, hidden_dim=1280, n_heads=16`
+    # ViT-Base: `n_layers=12, hidden_size=768, mlp_size=3072, n_heads=12`
+    # ViT-Large: `n_layers=24, hidden_size=1024, mlp_size=4096, n_heads=16`
+    # ViT-Huge: `n_layers=32, hidden_size=1280, mlp_size=5120, n_heads=16`
     def __init__(
         self,
         img_size=224,
         patch_size=16,
         n_layers=12,
-        hidden_dim=768,
+        hidden_size=768,
+        mlp_size=3072,
         n_heads=12,
         drop_prob=config.DROP_PROB,
         n_classes=0,
@@ -169,15 +168,15 @@ class ViT(nn.Module):
         n_patches = cell_size ** 2
 
         # $\textbf{E}$ of the equation 1 in the paper
-        self.patch_embed = PatchEmbedding(patch_size=patch_size, hidden_dim=hidden_dim)
-        self.cls_token = nn.Parameter(torch.randn((1, 1, hidden_dim))) # $x_{\text{class}}$
+        self.patch_embed = PatchEmbedding(patch_size=patch_size, hidden_size=hidden_size)
+        self.cls_token = nn.Parameter(torch.randn((1, 1, hidden_size))) # $x_{\text{class}}$
          # $\textbf{E}_\text{pos}$
-        self.pos_embed = nn.Parameter(torch.randn((1, n_patches + 1, hidden_dim)))
+        self.pos_embed = nn.Parameter(torch.randn((1, n_patches + 1, hidden_size)))
         self.drop1 = nn.Dropout(drop_prob)
-        self.tf_enc = TransformerEncoder(n_layers=n_layers, hidden_dim=hidden_dim, n_heads=n_heads)
+        self.tf_enc = TransformerEncoder(n_layers=n_layers, hidden_size=hidden_size, n_heads=n_heads)
 
-        self.norm = nn.LayerNorm(hidden_dim) # "$LN$"
-        self.proj = nn.Linear(hidden_dim, n_classes)
+        self.norm = nn.LayerNorm(hidden_size) # "$LN$"
+        self.proj = nn.Linear(hidden_size, n_classes)
         self.drop2 = nn.Dropout(drop_prob)
 
     def forward(self, x):
@@ -210,7 +209,7 @@ if __name__ == "__main__":
         img_size=32,
         patch_size=16,
         n_layers=12,
-        hidden_dim=192,
+        hidden_size=192,
         n_heads=12,
         n_classes=100,
     )

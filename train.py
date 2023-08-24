@@ -88,7 +88,8 @@ if __name__ == "__main__":
         img_size=config.IMG_SIZE,
         patch_size=config.PATCH_SIZE,
         n_layers=config.N_LAYERS,
-        hidden_dim=config.HIDDEN_DIM,
+        hidden_size=config.HIDDEN_SIZE,
+        mlp_size=config.MLP_SIZE,
         n_heads=config.N_HEADS,
         n_classes=config.N_CLASSES,
     )
