@@ -4,8 +4,8 @@ from pathlib import Path
 
 ### Data
 ### CIFAR-10
-# DATA_DIR = "/home/user/cv/cifar-10-batches-py"
-DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-10-batches-py"
+DATA_DIR = "/home/user/cv/cifar-10-batches-py"
+# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-10-batches-py"
 with open(Path(DATA_DIR)/"batches.meta", mode="rb") as f:
     meta = pickle.load(f, encoding="bytes")
 fine_label_names = meta[b"label_names"]
@@ -42,8 +42,9 @@ WEIGHT_DECAY = 0.3
 # WEIGHT_DECAY = 0.1
 
 ### Regularization
-SMOOTHING = 0.1
-CUTMIX = False
+SMOOTHING = 0.1 # If `0`, do not employ label smoothing
+CUTMIX = True
+CUTOUT = False
 HIDE_AND_SEEK = False
 
 ### Training

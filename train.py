@@ -24,6 +24,7 @@ from cifar100 import CIFAR100Dataset
 from evaluate import TopKAccuracy
 from hide_and_seek import apply_hide_and_seek
 from cutmix import apply_cutmix
+from cutout import apply_cutout
 
 torch.set_printoptions(linewidth=200, sci_mode=False)
 torch.manual_seed(config.SEED)
@@ -140,6 +141,8 @@ if __name__ == "__main__":
                 )
             if config.CUTMIX:
                 image, gt = apply_cutmix(image=image, gt=gt, n_classes=config.N_CLASSES)
+            if config.CUTOUT:
+                image = apply_cutout(image)
 
             with torch.autocast(
                 device_type=config.DEVICE.type,
