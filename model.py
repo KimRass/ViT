@@ -130,11 +130,12 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self, n_layers, hidden_size, n_heads):
+    def __init__(self, n_layers, hidden_size, mlp_size, n_heads):
         super().__init__()
 
         self.enc_stack = nn.ModuleList(
-            [TransformerEncoderLayer(hidden_size=hidden_size, n_heads=n_heads) for _ in range(n_layers)]
+            [TransformerEncoderLayer(hidden_size=hidden_size, mlp_size=mlp_size, n_heads=n_heads)
+                for _ in range(n_layers)]
         )
 
     def forward(self, x):
@@ -173,7 +174,9 @@ class ViT(nn.Module):
          # $\textbf{E}_\text{pos}$
         self.pos_embed = nn.Parameter(torch.randn((1, n_patches + 1, hidden_size)))
         self.drop1 = nn.Dropout(drop_prob)
-        self.tf_enc = TransformerEncoder(n_layers=n_layers, hidden_size=hidden_size, n_heads=n_heads)
+        self.tf_enc = TransformerEncoder(
+            n_layers=n_layers, hidden_size=hidden_size, mlp_size=mlp_size, n_heads=n_heads,
+        )
 
         self.norm = nn.LayerNorm(hidden_size) # "$LN$"
         self.proj = nn.Linear(hidden_size, n_classes)
