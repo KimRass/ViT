@@ -8,6 +8,9 @@ N_HEADS = 6
 ```
 - 일 때, `PATCH_SIZE = 16`일 때보다 `PATCH_SIZE = 8`일 때, 그리고 `PATCH_SIZE = 4`일 때 성능이 향상됐습니다. (Test set에 대한 Top-5 accuracy가 각각 0.547, 0.664, 0.670, 그리고 각각 420 epochs, 240 epochs, 240 epochs에서 수렴)
 - Hide-and-Seek를 적용하면 학습이 더 오래 걸릴뿐만 아니라 성능도 오히려 하락하는데, 이는 이미지의 해상도가 매우 낮고 (32×32) CIFAR-100 데이터셋의 크기가 작기 때문이 아닐까 싶습니다.
+- 반대로 CutMix를 적용하면 학습이 더 빨라짐을 확인했습니다.
+- Label smoothing으로 사용할 때 모델의 학습 속도가 빨라짐을 확인했습니다.
+- Cosine learning rate schedule (with warm-up)을 사용할 때 학습이 빨라짐을 확인했습니다.
 ```python
 N_LAYERS = 6
 HIDDEN_DIM = 192
