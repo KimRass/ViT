@@ -16,7 +16,7 @@ class ClassificationLoss(nn.Module):
         self.smoothing = smoothing
         self.n_classes = n_classes
 
-        self.crit = nn.CrossEntropyLoss(reduction="sum")
+        self.ce = nn.CrossEntropyLoss(reduction="sum")
 
     def forward(self, pred, gt):
         if gt.ndim == 1:
@@ -29,7 +29,7 @@ class ClassificationLoss(nn.Module):
             is_zero = (gt == 0)
             ll = self.smoothing / (gt.shape[1] - (~is_zero).sum(dim=1))
             new_gt += is_zero * ll.unsqueeze(1).repeat(1, self.n_classes)
-        loss = crit(pred, new_gt)
+        loss = self.ce(pred, new_gt)
         return loss
 
 
