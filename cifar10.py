@@ -65,7 +65,6 @@ class CIFAR10Dataset(Dataset):
         img = self.imgs[idx]
         image = Image.fromarray(img, mode="RGB")
         image = self.transform(image)
-        image.show()
 
         gt = self.gts[idx]
         gt = torch.tensor(gt).long()
