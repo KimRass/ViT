@@ -1,5 +1,6 @@
 # References:
     # https://github.com/omihub777/ViT-CIFAR
+    # https://github.com/huggingface/pytorch-image-models/blob/main/timm/scheduler/cosine_lr.py
 
 import sys
 sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
@@ -33,8 +34,8 @@ torch.manual_seed(config.SEED)
 # torch.autograd.set_detect_anomaly(True)
 
 
-def save_checkpoint(epoch, model, optim, scaler, avg_acc, save_path):
-    Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+def save_checkpoint(epoch, model, optim, scaler, avg_acc, ckpt_path):
+    Path(ckpt_path).parent.mkdir(parents=True, exist_ok=True)
 
     ckpt = {
         "epoch": epoch,
@@ -47,7 +48,7 @@ def save_checkpoint(epoch, model, optim, scaler, avg_acc, save_path):
     else:
         ckpt["model"] = model.state_dict()
 
-    torch.save(ckpt, str(save_path))
+    torch.save(ckpt, str(ckpt_path))
 
 
 @torch.no_grad()
@@ -133,10 +134,10 @@ if __name__ == "__main__":
         scaler.load_state_dict(ckpt["scaler"])
         print(f"""Resuming from checkpoint {config.CKPT_PATH}.""")
 
-        prev_save_path = config.CKPT_PATH
+        prev_ckpt_path = config.CKPT_PATH
     else:
         init_epoch = 0
-        prev_save_path = ".pth"
+        prev_ckpt_path = ".pth"
 
     start_time = time()
     running_loss = 0
@@ -189,21 +190,21 @@ if __name__ == "__main__":
         if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
             avg_acc = validate(test_dl=test_dl, model=model, metric=metric)
             if avg_acc > best_avg_acc:
-                cur_save_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(avg_acc, 3)}.pth"""
+                cur_ckpt_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(avg_acc, 3)}.pth"""
                 save_checkpoint(
                     epoch=epoch,
                     model=model,
                     optim=optim,
                     scaler=scaler,
                     avg_acc=avg_acc,
-                    save_path=cur_save_path,
+                    ckpt_path=cur_ckpt_path,
                 )
-                prev_save_path = Path(prev_save_path)
-                if prev_save_path.exists():
-                    prev_save_path.unlink()
                 print(f"""Saved checkpoint.""")
+                prev_ckpt_path = Path(prev_ckpt_path)
+                if prev_ckpt_path.exists():
+                    prev_ckpt_path.unlink()
 
                 best_avg_acc = avg_acc
-                prev_save_path = cur_save_path
+                prev_ckpt_path = cur_ckpt_path
 
         scheduler.step(epoch + 1)
