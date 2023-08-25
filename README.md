@@ -31,8 +31,7 @@ HIDDEN_SIZE = 192
 MLP_SIZE = 768
 N_HEADS = 6
 ```
-- 와 ViT-Base를 가지고 성능을 비교했을 때, 후자가 조금 더 성능이 낮았습니다. 아마 Overfitting이 발생할 것으로 추측됩니다.
-- 
+- 와 ViT-Base를 가지고 성능을 비교했을 때, 후자가 조금 더 성능이 낮았습니다. 아마 Overfitting이 발생한 것으로 추측됩니다.
 ```python
 DROP_PROB = 0.1
 N_LAYERS = 6
@@ -68,45 +67,6 @@ WARM_UP = 5
 N_EPOCHS = 200
 ```
 - Test set에 대해 Top-1 accuracy 0.783 (152 epochs)
-<!-- ```python
-N_LAYERS = 6
-HIDDEN_SIZE = 384
-N_HEADS = 6
-PATCH_SIZE = 16
-HIDE_AND_SEEK = True
-BATCH_SIZE = 8192
-BASE_LR = 3e-3
-BETA1 = 0.9
-BETA2 = 0.999
-WEIGHT_DECAY = 0.3
-```
-- Test set에 대해 Top-5 accuracy 0.547 (420 epochs)
-```python
-N_LAYERS = 6
-HIDDEN_SIZE = 384
-N_HEADS = 6
-PATCH_SIZE = 8
-HIDE_AND_SEEK = True
-BATCH_SIZE = 8192
-BASE_LR = 3e-3
-BETA1 = 0.9
-BETA2 = 0.999
-WEIGHT_DECAY = 0.3
-```
-- Test set에 대해 Top-5 accuracy 0.664 (240 epochs) -->
-<!-- ```python
-N_LAYERS = 6
-HIDDEN_SIZE = 384
-N_HEADS = 6
-PATCH_SIZE = 4
-HIDE_AND_SEEK = True
-BATCH_SIZE = 2048
-BASE_LR = 3e-3
-BETA1 = 0.9
-BETA2 = 0.999
-WEIGHT_DECAY = 0.3
-```
-- Test set에 대해 Top-5 accuracy 0.670 (240 epochs) -->
 
 # Research
 ## 23.08.20

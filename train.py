@@ -49,6 +49,7 @@ def save_checkpoint(epoch, model, optim, scaler, avg_acc, ckpt_path):
 
 @torch.no_grad()
 def validate(test_dl, model, metric):
+    print(f"""Validating...""")
     model.eval()
     sum_acc = 0
     for image, gt in tqdm(test_dl):
@@ -111,7 +112,6 @@ if __name__ == "__main__":
         # lr_min=0,
         warmup_t=config.WARMUP_EPOCHS,
         warmup_lr_init=config.BASE_LR / 10,
-        # warmup_prefix=True, # Warmup 부분과 Decay 부분이 자연스럽게 이어집니다.
         t_in_epochs=True # If `True` the number of iterations is given in terms of epochs
             # rather than the number of batch updates.
     )
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             loss = running_loss / step_cnt
             lr = optim.param_groups[0]['lr']
             print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
-            print(f"""[ {lr:.5f} ][ {get_elapsed_time(start_time)} ][ {int(loss):,} ]""")
+            print(f"""[ {lr:.5f} ][ {get_elapsed_time(start_time)} ][ {loss:2f} ]""")
 
             running_loss = 0
             step_cnt = 0

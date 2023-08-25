@@ -48,10 +48,11 @@ class CIFAR10Dataset(Dataset):
 
         self.transform = T.Compose([
             T.RandomHorizontalFlip(p=0.5),
-            # T.RandomApply(
-            #     [T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)],
-            #     p=0.5,
-            # ),
+            T.RandomCrop(size=config.IMG_SIZE, padding=4, pad_if_needed=True),
+            T.RandomApply(
+                [T.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1)],
+                p=0.4,
+            ),
             T.ToTensor(),
             # get_cifar100_mean_and_std(config.DATA_DIR)
             T.Normalize(mean=(0.507, 0.487, 0.441), std=(0.267, 0.256, 0.276)),
@@ -64,6 +65,7 @@ class CIFAR10Dataset(Dataset):
         img = self.imgs[idx]
         image = Image.fromarray(img, mode="RGB")
         image = self.transform(image)
+        image.show()
 
         gt = self.gts[idx]
         gt = torch.tensor(gt).long()
@@ -72,13 +74,9 @@ class CIFAR10Dataset(Dataset):
 
 if __name__ == "__main__":
     ds = CIFAR10Dataset(config.DATA_DIR, split="train")
-    dl = DataLoader(ds, batch_size=4, shuffle=True)
-    # for image, gt in dl:
-    #     print(image.shape)
-    # # print(len(dl))
+    for _ in range(10):
+        image, gt = ds[100]
+    dl = DataLoader(ds, batch_size=1, shuffle=False)
     di = iter(dl)
 
     image, gt = next(di)
-    # # grid = make_grid(image, nrow=1, normalize=True)
-    # # TF.to_pil_image(grid).show()
-    # # config.CIFAR100_CLASSES[gt]
