@@ -1,6 +1,9 @@
 import torch
 import pickle
 from pathlib import Path
+# import sys
+
+# sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
 
 ### Data
 ### CIFAR-10
@@ -37,12 +40,11 @@ PATCH_SIZE = 4
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
 # of 0.1, which we found to be useful for transfer of all models."
 # LR = 0.01
-BASE_LR = 3e-3
+BASE_LR = 1e-3
 BETA1 = 0.9
 BETA2 = 0.999
-WEIGHT_DECAY = 0.3
-# WEIGHT_DECAY = 0.1
-WARM_UP = 5
+WEIGHT_DECAY = 5e-5
+WARMUP_EPOCHS = 5
 
 ### Regularization
 SMOOTHING = 0.1 # If `0`, do not employ label smoothing

@@ -2,12 +2,8 @@
     # https://github.com/omihub777/ViT-CIFAR
     # https://github.com/huggingface/pytorch-image-models/blob/main/timm/scheduler/cosine_lr.py
 
-import sys
-sys.path.insert(0, "/Users/jongbeomkim/Desktop/workspace/vit_from_scratch")
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.optim import Adam
@@ -113,7 +109,7 @@ if __name__ == "__main__":
         optimizer=optim,
         t_initial=config.N_EPOCHS,
         # lr_min=0,
-        warmup_t=config.WARM_UP,
+        warmup_t=config.WARMUP_EPOCHS,
         warmup_lr_init=config.BASE_LR / 10,
         # warmup_prefix=True, # Warmup 부분과 Decay 부분이 자연스럽게 이어집니다.
         t_in_epochs=True # If `True` the number of iterations is given in terms of epochs
