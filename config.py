@@ -30,16 +30,11 @@ N_LAYERS = 6
 HIDDEN_SIZE = 384
 MLP_SIZE = 384
 N_HEADS = 12
-# N_LAYERS = 12 # ViT-Base
-# HIDDEN_SIZE = 768 # ViT-Base
-# MLP_SIZE = 3072 # ViT-Base
-# N_HEADS = 12 # ViT-Base
 PATCH_SIZE = 4
 
 ### Optimizer
 # "Adam with $beta_{1} = 0.9$, $beta_{2}= 0.999$, a batch size of 4096 and apply a high weight decay
 # of 0.1, which we found to be useful for transfer of all models."
-# LR = 0.01
 BASE_LR = 1e-3
 BETA1 = 0.9
 BETA2 = 0.999
@@ -48,12 +43,14 @@ WARMUP_EPOCHS = 5
 
 ### Regularization
 SMOOTHING = 0.1 # If `0`, do not employ label smoothing
-CUTMIX = True
+CUTMIX = False
 CUTOUT = False
-HIDE_AND_SEEK = False
+HIDE_AND_SEEK = True
 
 ### Training
 SEED = 17
+BATCH_SIZE = 2048
+N_EPOCHS = 200
 N_WORKERS = 6
 N_GPUS = torch.cuda.device_count()
 if N_GPUS > 0:
@@ -65,10 +62,8 @@ else:
 MULTI_GPU = True
 AUTOCAST = True
 # BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
-BATCH_SIZE = 2048
 N_PRINT_EPOCHS = 4
 N_VAL_EPOCHS = 4
-N_EPOCHS = 200
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
 ### Resume

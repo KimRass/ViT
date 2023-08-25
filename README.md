@@ -47,7 +47,7 @@ BETA1 = 0.9
 BETA2 = 0.999
 WEIGHT_DECAY = 0.3
 ```
-- Test set에 대해 Top-1 accuracy 0.789 (296 epochs)
+- Top-1 accuracy 0.789 on test set at 296 epoch
 ```python
 DROP_PROB = 0.1
 N_LAYERS = 6
@@ -66,7 +66,35 @@ WEIGHT_DECAY = 0.3
 WARM_UP = 5
 N_EPOCHS = 200
 ```
-- Test set에 대해 Top-1 accuracy 0.783 (152 epochs)
+- Top-1 accuracy 0.783 on test set at 152 epoch
+```python
+### Architecture
+DROP_PROB = 0.1
+N_LAYERS = 6
+HIDDEN_SIZE = 384
+MLP_SIZE = 384
+N_HEADS = 12
+PATCH_SIZE = 4
+
+### Optimizer
+BASE_LR = 1e-3
+BETA1 = 0.9
+BETA2 = 0.999
+WEIGHT_DECAY = 5e-5
+WARMUP_EPOCHS = 5
+
+### Regularization
+SMOOTHING = 0.1
+CUTMIX = True
+CUTOUT = False
+HIDE_AND_SEEK = False
+
+### Training
+SEED = 17
+BATCH_SIZE = 2048
+N_EPOCHS = 200
+```
+- Top-1 accuracy 0.851 on test set at 184 epoch
 
 # Research
 ## 23.08.20
