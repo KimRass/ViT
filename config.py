@@ -53,7 +53,7 @@ HIDE_AND_SEEK = False
 
 ### Training
 SEED = 17
-BATCH_SIZE = 2048
+BATCH_SIZE = 4096
 N_EPOCHS = 200
 N_WORKERS = 6
 N_GPUS = torch.cuda.device_count()
