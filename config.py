@@ -71,4 +71,4 @@ N_VAL_EPOCHS = 4
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
 ### Resume
-CKPT_PATH = CKPT_DIR/"epoch_204_avg_acc_0.83.pth"
+CKPT_PATH = None
