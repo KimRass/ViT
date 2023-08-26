@@ -55,7 +55,7 @@ HIDE_AND_SEEK = False
 SEED = 17
 # BATCH_SIZE = 4096 # "All models are trained with a batch size of 4096."
 BATCH_SIZE = 2048
-N_EPOCHS = 200
+N_EPOCHS = 300
 N_WORKERS = 6
 N_GPUS = torch.cuda.device_count()
 if N_GPUS > 0:
@@ -71,4 +71,4 @@ N_VAL_EPOCHS = 4
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
 ### Resume
-CKPT_PATH = None
+CKPT_PATH = CKPT_DIR/"epoch_200_avg_acc_0.849.pth"

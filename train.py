@@ -49,7 +49,7 @@ def save_checkpoint(epoch, model, optim, scaler, avg_acc, ckpt_path):
 
 @torch.no_grad()
 def validate(test_dl, model, metric):
-    print(f"""Validating...""")
+    print(f"""Validating...""", end="")
     model.eval()
     sum_acc = 0
     for image, gt in test_dl:
@@ -60,17 +60,17 @@ def validate(test_dl, model, metric):
         acc = metric(pred=pred, gt=gt)
         sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
-    print(f"""Average accuracy: {avg_acc:.3f}""")
+    print(f"""    Average accuracy: {avg_acc:.3f}""")
 
     model.train()
     return avg_acc
 
 
 if __name__ == "__main__":
-    print(f"""AUTOCAST = {config.AUTOCAST}""")
     print(f"""N_WORKERS = {config.N_WORKERS}""")
-    print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
     print(f"""DEVICE = {config.DEVICE}""")
+    print(f"""AUTOCAST = {config.AUTOCAST}""")
+    print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
 
     train_ds = CIFAR10Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="train")
     train_dl = DataLoader(
