@@ -125,20 +125,22 @@ if __name__ == "__main__":
             model.module.load_state_dict(ckpt["model"])
         else:
             model.load_state_dict(ckpt["model"])
-        init_epoch = ckpt["epoch"]
         optim.load_state_dict(ckpt["optimizer"])
         scaler.load_state_dict(ckpt["scaler"])
-        print(f"""Resuming from checkpoint {config.CKPT_PATH}.""")
+
+        init_epoch = ckpt["epoch"]
+        best_avg_acc = ckpt["average_accuracy"]
+        print(f"""Resuming from checkpoint '{config.CKPT_PATH}'.""")
 
         prev_ckpt_path = config.CKPT_PATH
     else:
         init_epoch = 0
         prev_ckpt_path = ".pth"
+        best_avg_acc = 0
 
     start_time = time()
     running_loss = 0
     step_cnt = 0
-    best_avg_acc = 0
     for epoch in range(init_epoch + 1, config.N_EPOCHS + 1):
         for step, (image, gt) in enumerate(train_dl, start=1):
             image = image.to(config.DEVICE)
