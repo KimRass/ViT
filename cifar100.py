@@ -41,7 +41,7 @@ def get_cifar100_mean_and_std(data_dir, split="train"):
     return mean, std
 
 
-class CIFAR100Dataset(Datsaset):
+class CIFAR100Dataset(Dataset):
     def __init__(self, data_dir, mean, std, split="train"):
         super().__init__()
 
