@@ -52,7 +52,7 @@ def validate(test_dl, model, metric):
     print(f"""Validating...""")
     model.eval()
     sum_acc = 0
-    for image, gt in tqdm(test_dl):
+    for image, gt in test_dl:
         image = image.to(config.DEVICE)
         gt = gt.to(config.DEVICE)
 
