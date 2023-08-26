@@ -95,7 +95,7 @@ BATCH_SIZE = 2048
 N_EPOCHS = 200
 ```
 - Top-1 accuracy 0.851 on test set at 184 epoch
-- 동일한 셋팅에 `CUTMIX = True`로 바꿀 경우, - Top-1 accuracy 0.849 on test set at 200 epoch
+- 동일한 셋팅에 `CUTMIX = True`로 바꿀 경우, - Top-1 accuracy 0.859 on test set at 280 epoch
 
 # Research
 ## 23.08.20

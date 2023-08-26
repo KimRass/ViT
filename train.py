@@ -49,7 +49,7 @@ def save_checkpoint(epoch, model, optim, scaler, avg_acc, ckpt_path):
 
 @torch.no_grad()
 def validate(test_dl, model, metric):
-    print(f"""Validating...""", end="")
+    print(f"""Validating...""")
     model.eval()
     sum_acc = 0
     for image, gt in test_dl:
@@ -60,7 +60,7 @@ def validate(test_dl, model, metric):
         acc = metric(pred=pred, gt=gt)
         sum_acc += acc
     avg_acc = sum_acc / len(test_dl)
-    print(f"""    Average accuracy: {avg_acc:.3f}""")
+    print(f"""Average accuracy: {avg_acc:.3f}""")
 
     model.train()
     return avg_acc
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
         init_epoch = ckpt["epoch"]
         best_avg_acc = ckpt["average_accuracy"]
-        print(f"""Resuming from checkpoint '{config.CKPT_PATH}'.""")
+        print(f"""Resuming from checkpoint '{config.CKPT_PATH}'...""")
 
         prev_ckpt_path = config.CKPT_PATH
     else:

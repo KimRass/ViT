@@ -47,7 +47,7 @@ WARMUP_EPOCHS = 5
 
 ### Regularization
 SMOOTHING = 0.1 # If `0`, do not employ label smoothing
-CUTMIX = True
+CUTMIX = False
 CUTOUT = False
 HIDE_AND_SEEK = False
 
@@ -71,4 +71,4 @@ N_VAL_EPOCHS = 4
 CKPT_DIR = Path(__file__).parent/"checkpoints"
 
 ### Resume
-CKPT_PATH = CKPT_DIR/"epoch_200_avg_acc_0.849.pth"
+CKPT_PATH = None
