@@ -85,7 +85,7 @@ WARMUP_EPOCHS = 5
 
 ### Regularization
 SMOOTHING = 0.1
-CUTMIX = True
+CUTMIX = False
 CUTOUT = False
 HIDE_AND_SEEK = False
 

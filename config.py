@@ -15,6 +15,8 @@ fine_label_names = meta[b"label_names"]
 CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
 N_CLASSES = len(CIFAR100_CLASSES)
 IMG_SIZE = 32
+MEAN = (0.491, 0.482, 0.447)
+STD = (0.248, 0.244, 0.261)
 ### CIFAR-100
 # DATA_DIR = "/home/user/cv/cifar-100-python/"
 # with open(Path(DATA_DIR)/"meta", mode="rb") as f:
@@ -23,6 +25,8 @@ IMG_SIZE = 32
 # CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
 # N_CLASSES = len(CIFAR100_CLASSES)
 # IMG_SIZE = 32
+# MEAN = (0.507, 0.487, 0.441)
+# STD = (0.267, 0.256, 0.276)
 
 ### Architecture
 DROP_PROB = 0.1
@@ -43,9 +47,9 @@ WARMUP_EPOCHS = 5
 
 ### Regularization
 SMOOTHING = 0.1 # If `0`, do not employ label smoothing
-CUTMIX = False
+CUTMIX = True
 CUTOUT = False
-HIDE_AND_SEEK = True
+HIDE_AND_SEEK = False
 
 ### Training
 SEED = 17

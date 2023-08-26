@@ -72,12 +72,12 @@ if __name__ == "__main__":
     print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
     print(f"""DEVICE = {config.DEVICE}""")
 
-    train_ds = CIFAR10Dataset(config.DATA_DIR, split="train")
+    train_ds = CIFAR10Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="train")
     train_dl = DataLoader(
         train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True,
     )
 
-    test_ds = CIFAR10Dataset(config.DATA_DIR, split="test")
+    test_ds = CIFAR10Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="test")
     test_dl = DataLoader(
         test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=True,
     )
@@ -112,8 +112,7 @@ if __name__ == "__main__":
         # lr_min=0,
         warmup_t=config.WARMUP_EPOCHS,
         warmup_lr_init=config.BASE_LR / 10,
-        t_in_epochs=True # If `True` the number of iterations is given in terms of epochs
-            # rather than the number of batch updates.
+        t_in_epochs=True,
     )
 
     scaler = GradScaler(enabled=True if config.AUTOCAST else False)
@@ -148,7 +147,7 @@ if __name__ == "__main__":
 
             if config.HIDE_AND_SEEK:
                 image = apply_hide_and_seek(
-                    image, patch_size=config.IMG_SIZE // 4, mean=(0.507, 0.487, 0.441)
+                    image, patch_size=config.IMG_SIZE // 4, mean=config.MEAN,
                 )
             if config.CUTMIX:
                 image, gt = apply_cutmix(image=image, gt=gt, n_classes=config.N_CLASSES)

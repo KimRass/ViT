@@ -41,8 +41,8 @@ def get_cifar100_mean_and_std(data_dir, split="train"):
     return mean, std
 
 
-class CIFAR100Dataset(Dataset):
-    def __init__(self, data_dir, split="train"):
+class CIFAR100Dataset(Datsaset):
+    def __init__(self, data_dir, mean, std, split="train"):
         super().__init__()
 
         self.imgs, self.gts = _get_cifar100_images_and_gts(data_dir=data_dir, split=split)
@@ -54,8 +54,7 @@ class CIFAR100Dataset(Dataset):
                 p=0.5,
             ),
             T.ToTensor(),
-            # get_cifar100_mean_and_std(config.DATA_DIR)
-            T.Normalize(mean=(0.507, 0.487, 0.441), std=(0.267, 0.256, 0.276)),
+            T.Normalize(mean=mean, std=std),
         ])
 
     def __len__(self):
