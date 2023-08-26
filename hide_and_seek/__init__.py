@@ -2,7 +2,7 @@ import torch
 import random
 
 
-def apply_hide_and_seek(image, patch_size, hide_prob=0.5, mean=(0.5, 0.5, 0.5)):
+def apply_hide_and_seek(image, patch_size, hide_prob=0.3, mean=(0.5, 0.5, 0.5)):
     b, _, h, w = image.shape
     assert h % patch_size == 0 and w % patch_size == 0,\
         "`patch_size` argument should be a multiple of both the width and height of the input image"

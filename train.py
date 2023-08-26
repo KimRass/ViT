@@ -177,7 +177,7 @@ if __name__ == "__main__":
             loss = running_loss / step_cnt
             lr = optim.param_groups[0]['lr']
             print(f"""[ {epoch:,}/{config.N_EPOCHS} ][ {step:,}/{len(train_dl):,} ]""", end="")
-            print(f"""[ {lr:.5f} ][ {get_elapsed_time(start_time)} ][ {loss:2f} ]""")
+            print(f"""[ {lr:.5f} ][ {get_elapsed_time(start_time)} ][ {loss:.2f} ]""")
 
             running_loss = 0
             step_cnt = 0
