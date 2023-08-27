@@ -72,12 +72,12 @@ if __name__ == "__main__":
     print(f"""AUTOCAST = {config.AUTOCAST}""")
     print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
 
-    train_ds = CIFAR10Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="train")
+    train_ds = CIFAR100Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="train")
     train_dl = DataLoader(
         train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True,
     )
 
-    test_ds = CIFAR10Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="test")
+    test_ds = CIFAR100Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="test")
     test_dl = DataLoader(
         test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=True,
     )
