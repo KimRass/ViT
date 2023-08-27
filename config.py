@@ -7,26 +7,25 @@ from pathlib import Path
 
 ### Data
 ### CIFAR-10
-DATA_DIR = "/home/user/cv/cifar-10-batches-py"
-# DATA_DIR = "/Users/jongbeomkim/Documents/datasets/cifar-10-batches-py"
-with open(Path(DATA_DIR)/"batches.meta", mode="rb") as f:
+# DATA_DIR = "/home/user/cv/cifar-10-batches-py"
+# with open(Path(DATA_DIR)/"batches.meta", mode="rb") as f:
+#     meta = pickle.load(f, encoding="bytes")
+# label_names = meta[b"label_names"]
+# CIFAR10_CLASSES = [i.decode("ascii") for i in label_names]
+# N_CLASSES = len(CIFAR10_CLASSES)
+# IMG_SIZE = 32
+# MEAN = (0.491, 0.482, 0.447)
+# STD = (0.248, 0.244, 0.261)
+### CIFAR-100
+DATA_DIR = "/home/user/cv/cifar-100-python/"
+with open(Path(DATA_DIR)/"meta", mode="rb") as f:
     meta = pickle.load(f, encoding="bytes")
-fine_label_names = meta[b"label_names"]
+fine_label_names = meta[b"fine_label_names"]
 CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
 N_CLASSES = len(CIFAR100_CLASSES)
 IMG_SIZE = 32
-MEAN = (0.491, 0.482, 0.447)
-STD = (0.248, 0.244, 0.261)
-### CIFAR-100
-# DATA_DIR = "/home/user/cv/cifar-100-python/"
-# with open(Path(DATA_DIR)/"meta", mode="rb") as f:
-#     meta = pickle.load(f, encoding="bytes")
-# fine_label_names = meta[b"fine_label_names"]
-# CIFAR100_CLASSES = [i.decode("ascii") for i in fine_label_names]
-# N_CLASSES = len(CIFAR100_CLASSES)
-# IMG_SIZE = 32
-# MEAN = (0.507, 0.487, 0.441)
-# STD = (0.267, 0.256, 0.276)
+MEAN = (0.507, 0.487, 0.441)
+STD = (0.267, 0.256, 0.276)
 
 ### Architecture
 DROP_PROB = 0.1
