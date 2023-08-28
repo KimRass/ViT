@@ -44,6 +44,7 @@ HIDE_AND_SEEK = False
 BATCH_SIZE = 2048
 N_EPOCHS = 300
 ```
+- Top-1 accuracy 0.447 on test set at 256 epoch
 
 # Research
 - `F.gelu()` → `nn.Dropout()`의 순서가 되도록 Architecture를 변경했습니다. 순서를 반대로 할 경우 미분 값이 0이 되어 학습이 이루어지지 않는 현상이 발생함을 확인했습니다.
