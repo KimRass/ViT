@@ -41,9 +41,9 @@ class MSA(nn.Module):
     def __init__(self, hidden_size, n_heads, drop_prob=config.DROP_PROB):
         super().__init__()
 
+        self.head_size = hidden_size // n_heads
         self.n_heads = n_heads
 
-        self.head_size = hidden_size // n_heads
         # "U_{qkv} \in \mathbb{R}^{D \times 3D_{h}}"
         self.qkv_proj = nn.Linear(hidden_size, 3 * n_heads * self.head_size, bias=False)
         self.drop = nn.Dropout(drop_prob)
