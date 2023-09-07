@@ -13,8 +13,8 @@ class ClassificationLoss(nn.Module):
 
         assert 0 <= smoothing <= 1, "The argument `smoothing` must be between 0 and 1!"
 
-        self.smoothing = smoothing
         self.n_classes = n_classes
+        self.smoothing = smoothing
 
         self.ce = nn.CrossEntropyLoss(reduction="sum")
 
