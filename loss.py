@@ -27,8 +27,8 @@ class ClassificationLoss(nn.Module):
             new_gt.sum(dim=1)
             new_gt *= (1 - self.smoothing)
             is_zero = (gt == 0)
-            ll = self.smoothing / (gt.shape[1] - (~is_zero).sum(dim=1))
-            new_gt += is_zero * ll.unsqueeze(1).repeat(1, self.n_classes)
+            likelihood = self.smoothing / (gt.shape[1] - (~is_zero).sum(dim=1))
+            new_gt += is_zero * likelihood.unsqueeze(1).repeat(1, self.n_classes)
         loss = self.ce(pred, new_gt)
         return loss
 
