@@ -1,6 +1,7 @@
 # References
     # https://github.com/jacobgil/vit-explain
     # https://jacobgil.github.io/deeplearning/vision-transformer-explainability#how-do-the-attention-activations-look-like-for-the-class-token-throughout-the-network-
+    # https://github.com/huggingface/pytorch-image-models/blob/main/timm/models/vision_transformer.py
 
 import torch
 import torch.nn as nn
@@ -8,18 +9,18 @@ import torchvision.transforms as T
 import numpy as np
 import cv2
 import re
-from itertools import product
 from typing import Literal
 import ssl
+from pathlib import Path
 
-from image_utils import (
+from utils import (
     load_image,
     show_image,
     save_image,
     _to_pil,
     _apply_jet_colormap,
     _blend_two_images,
-    _rgba_to_rgb
+    _rgba_to_rgb,
 )
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -38,8 +39,6 @@ class AttentionRollout:
         self.model = model
         self.attn_layer_regex = attn_layer_regex
 
-        # Reference:
-        # https://github.com/huggingface/pytorch-image-models/blob/main/timm/models/vision_transformer.py
         for name, module in model.named_modules():
             if re.search(pattern=r"(attn)$", string=name):
                 module.fused_attn = False
@@ -69,7 +68,7 @@ class AttentionRollout:
         self,
         img: np.ndarray,
         head_fusion: Literal["mean", "max", "min", "sum"]="min",
-        discard_ratio: float=0.9
+        discard_ratio: float=0.9,
     ):
         image = self.transform(_to_pil(img)).unsqueeze(0)
         attn_mats = attn_rollout._get_attention_matrices(image)
@@ -81,7 +80,8 @@ class AttentionRollout:
             # to token $i$ in the next layer.
 
             # The Attention rollout paper suggests taking the average of the heads.
-            # It can also make sense using other choices: like the minimum, the maximum, or using different weights. 
+            # It can also make sense using other choices: like the minimum, the maximum, or using
+            # different weights. 
             if head_fusion == "mean":
                 attn_mat = attn_mat.mean(dim=1)
             elif head_fusion == "min":
@@ -101,21 +101,22 @@ class AttentionRollout:
             attn_mat.masked_fill_(mask=(attn_mat < ref_val), value=0)
 
             # We also have the residual connections.
-            # We can model them by adding the identity matrix $I$ to the layer attention matrix: $A_{ij} + I$.
+            # We can model them by adding the identity matrix $I$ to the layer attention matrix:
+            # $A_{ij} + I$.
             id_mat = torch.eye(attn_mat.shape[1])
             attn_mat = attn_mat + id_mat
 
-            # If we look at the first row (shape 197), and discard the first value (left with shape 196=14x14) that’s how the inforattn_mapion flows from the different locations in the image to the class token.
+            # If we look at the first row (shape 197), and discard the first value (left with shape
+            # 196=14x14) that’s how the inforattn_mapion flows from the different locations in the
+            # image to the class token.
             # We also have to normalize the rows, to keep the total attention flow $1$.
-            # 따라서 각 행마다 합을 구해야 함 
+            # 따라서 각 행마다 합을 구해야 합니다.
             attn_mat /= attn_mat.sum(dim=2)
 
             # Recursively multiply the attention matrix
-            # attn_map = torch.matmul(attn_map, attn_mat)
             attn_map = torch.matmul(attn_mat, attn_map)
 
         attn_map = attn_map.squeeze()[0, 1:]
-        # attn_map = attn_map.view(int(attn_map.shape[0] ** 0.5), int(attn_map.shape[0] ** 0.5))
         attn_map = attn_map.reshape(int(attn_map.shape[0] ** 0.5), int(attn_map.shape[0] ** 0.5))
 
         attn_map = attn_map.detach().cpu().numpy()
@@ -131,7 +132,6 @@ class AttentionRollout:
 
 def apply_attention_map_to_image(img, attn_map, mode="jet"):
     if mode == "brightness":
-        # attn_map = np.clip(attn_map.astype("uint16") * 1.4, 0, 255).astype("uint8")
         output = np.concatenate([img, attn_map[..., None]], axis=2)
         output = _rgba_to_rgb(output)
     elif mode == "jet":
@@ -141,28 +141,31 @@ def apply_attention_map_to_image(img, attn_map, mode="jet"):
 
 
 if __name__ == "__main__":
-    model = torch.hub.load("facebookresearch/deit:main", model="deit_tiny_patch16_224", pretrained=True)
+    model = torch.hub.load(
+        "facebookresearch/deit:main", model="deit_tiny_patch16_224", pretrained=True,
+    )
     attn_rollout = AttentionRollout(model=model, attn_layer_regex=r"(.attn_drop)$")
 
-    img = load_image("golden_retriever.jpg")
-    # img = load_image("/Users/jongbeomkim/Desktop/workspace/explainable_ai/attention_rollout/golden_retriever.jpg")
-
+    save_dir = Path(__file__).parent/"examples"
+    img = load_image(save_dir/"golden_retriever.jpg")
     for discard_ratio in np.arange(0, 1, 0.05):
-        attn_map = attn_rollout.get_attention_map(img=img, head_fusion="max", discard_ratio=discard_ratio)
+        attn_map = attn_rollout.get_attention_map(
+            img=img, head_fusion="max", discard_ratio=discard_ratio,
+        )
         output = apply_attention_map_to_image(img=img, attn_map=attn_map, mode="jet")
 
         save_image(
             img1=output,
-            path=f"""attention_map_examples/head_fusion_max_mode_jet/discard_ratio_{discard_ratio:.2f}.jpg"""
-            # path=f"""/Users/jongbeomkim/Desktop/workspace/explainable_ai/attention_rollout/attention_map_examples/head_fusion_max_mode_jet/discard_ratio_{discard_ratio:.2f}.jpg"""
+            path=f"{save_dir}/head_fusion_max_mode_jet/discard_ratio_{discard_ratio:.2f}.jpg"
         )
 
     for discard_ratio in np.arange(0, 1, 0.05):
-        attn_map = attn_rollout.get_attention_map(img=img, head_fusion="max", discard_ratio=discard_ratio)
+        attn_map = attn_rollout.get_attention_map(
+            img=img, head_fusion="max", discard_ratio=discard_ratio,
+        )
         output = apply_attention_map_to_image(img=img, attn_map=attn_map, mode="brightness")
 
         save_image(
             img1=output,
-            path=f"""attention_map_examples/head_fusion_max_mode_brightness/discard_ratio_{discard_ratio:.2f}.jpg"""
-            # path=f"""/Users/jongbeomkim/Desktop/workspace/explainable_ai/attention_rollout/attention_map_examples/head_fusion_max_mode_brightness/discard_ratio_{discard_ratio:.2f}.jpg"""
+            path=f"{save_dir}/head_fusion_max_mode_brightness/discard_ratio_{discard_ratio:.2f}.jpg"
         )
