@@ -25,7 +25,7 @@
     N_EPOCHS = 300
     ```
 ### Trained on CIFAR-100 dataset for 256 epochs
-- [vit_cifar10.pth](https://drive.google.com/file/d/1vxH9c1q2BbHiFRN8JSlu3zj7ZBPvQYR8/view?usp=sharing)
+- [vit_cifar100.pth](https://drive.google.com/file/d/1vxH9c1q2BbHiFRN8JSlu3zj7ZBPvQYR8/view?usp=sharing)
 - Top-1 accuracy 0.447 on test set
     ```python
     MEAN = (0.507, 0.487, 0.441)
