@@ -68,15 +68,3 @@ class CIFAR100Dataset(Dataset):
         gt = self.gts[idx]
         gt = torch.tensor(gt).long()
         return image, gt
-
-
-if __name__ == "__main__":
-    ds = CIFAR100Dataset(config.DATA_DIR, split="train")
-    # image, gt = ds[100]
-    # image.show()
-    dl = DataLoader(ds, batch_size=4, shuffle=True)
-    di = iter(dl)
-
-    image, gt = next(di)
-    # grid = make_grid(image, nrow=1, normalize=True)
-    # TF.to_pil_image(grid).show()

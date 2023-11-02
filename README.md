@@ -1,7 +1,8 @@
 # 'ViT' (Dosovitskiy et al., 2020) implementation from scratch in PyTorch
 ## Pre-trained Models
-### CIFAR-10
-- [Top-1 accuracy 0.864 on CIFAR-10 test set at 300 epoch](https://drive.google.com/file/d/1NkMB-WIDIwLIs-DvIxI39-K4TgQFq-nL/view?usp=sharing)
+### Trained on CIFAR-10 dataset for 300 epochs
+- [vit_cifar10.pth](https://drive.google.com/file/d/1NkMB-WIDIwLIs-DvIxI39-K4TgQFq-nL/view?usp=sharing)
+- Top-1 accuracy 0.864 on test set
     ```python
     MEAN = (0.491, 0.482, 0.447)
     STD = (0.248, 0.244, 0.261)
@@ -23,8 +24,9 @@
     BATCH_SIZE = 2048
     N_EPOCHS = 300
     ```
-### CIFAR-100
-- [Top-1 accuracy 0.447 on test set at 256 epoch](https://drive.google.com/file/d/1vxH9c1q2BbHiFRN8JSlu3zj7ZBPvQYR8/view?usp=sharing)
+### Trained on CIFAR-100 dataset for 256 epochs
+- [vit_cifar10.pth](https://drive.google.com/file/d/1vxH9c1q2BbHiFRN8JSlu3zj7ZBPvQYR8/view?usp=sharing)
+- Top-1 accuracy 0.447 on test set
     ```python
     MEAN = (0.507, 0.487, 0.441)
     STD = (0.267, 0.256, 0.276)
@@ -51,5 +53,5 @@
 - CIFAR-100에 대해서 `N_LAYERS = 6, HIDDEN_SIZE = 384, N_HEADS = 6`일 때, `PATCH_SIZE = 16`일 때보다 `PATCH_SIZE = 8`일 때, 그리고 `PATCH_SIZE = 4`일 때 성능이 향상됐습니다.
 - CIFAR-10과 CIFAR-100에 대해서 공통적으로 ViT-Base보다 작은 크기의 모델을 사용할 때 성능이 더 높았습니다.
 ## References:
-- [1] [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)
-- [2] [Understanding Why ViT Trains Badly on Small Datasets: An Intuitive Perspective](https://arxiv.org/abs/2302.03751)
+- [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://github.com/KimRass/ViT/blob/main/an_image_is_worth_16x16_words_transformers_fo_image_recognition_at_scale.pdf)
+- [Understanding Why ViT Trains Badly on Small Datasets: An Intuitive Perspective](https://github.com/KimRass/ViT/blob/main/understanding_why_vit_trains_badly_on_small_datasets_an_intuitive_perspective.pdf)
