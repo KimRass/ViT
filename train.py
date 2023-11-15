@@ -4,14 +4,12 @@
 
 import torch
 import torch.nn as nn
-from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader
 from torch.optim import Adam
 from torch.cuda.amp import GradScaler
 from timm.scheduler import CosineLRScheduler
 from time import time
 from pathlib import Path
-from tqdm.auto import tqdm
 
 import config
 from utils import get_elapsed_time
@@ -26,8 +24,6 @@ from cutout import apply_cutout
 
 torch.set_printoptions(linewidth=200, sci_mode=False)
 torch.manual_seed(config.SEED)
-
-# torch.autograd.set_detect_anomaly(True)
 
 
 def save_checkpoint(epoch, model, optim, scaler, avg_acc, ckpt_path):
@@ -94,7 +90,6 @@ if __name__ == "__main__":
     if config.N_GPUS > 0:
         model = model.to(config.DEVICE)
         if config.MULTI_GPU:
-            # model = DDP(model)
             model = nn.DataParallel(model)
 
     crit = ClassificationLoss(n_classes=config.N_CLASSES, smoothing=config.SMOOTHING)
@@ -109,7 +104,6 @@ if __name__ == "__main__":
     scheduler = CosineLRScheduler(
         optimizer=optim,
         t_initial=config.N_EPOCHS,
-        # lr_min=0,
         warmup_t=config.WARMUP_EPOCHS,
         warmup_lr_init=config.BASE_LR / 10,
         t_in_epochs=True,
