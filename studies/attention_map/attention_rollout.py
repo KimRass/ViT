@@ -12,6 +12,7 @@ import re
 from typing import Literal
 import ssl
 from pathlib import Path
+import argparse
 
 from utils import (
     load_image,
@@ -28,6 +29,17 @@ ssl._create_default_https_context = ssl._create_unverified_context
 IMG_SIZE = 224
 PATCH_SIZE = 16
 N_PATCHS = (IMG_SIZE // PATCH_SIZE) ** 2
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--img_path", type=str, required=True)
+    parser.add_argument("--head_fusion", type=str, required=True)
+    parser.add_argument("--discard_ratio", type=float, required=True)
+
+    args = parser.parse_args()
+    return args
 
 
 class AttentionRollout:

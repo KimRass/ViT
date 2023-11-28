@@ -8,8 +8,8 @@ import torchvision
 import ssl
 import timm
 
-from image_utils import save_image
-from vit.studies.position_embedding_similarity.main import (
+from utils import save_image
+from studies.position_embedding_similarity.main import (
     get_position_embedding_similarity,
     visualize_position_embedding_similarity
 )
