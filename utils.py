@@ -107,13 +107,3 @@ def save_image(img1, img2=None, alpha=0.5, path="") -> None:
         cv2.imwrite(
             filename=str(path), img=img_arr, params=[cv2.IMWRITE_JPEG_QUALITY, 100]
         )
-
-
-def _rgba_to_rgb(img):
-    copied = img.copy().astype("float")
-    copied[..., 0] *= copied[..., 3] / 255
-    copied[..., 1] *= copied[..., 3] / 255
-    copied[..., 2] *= copied[..., 3] / 255
-    copied = copied.astype("uint8")
-    copied = copied[..., : 3]
-    return copied

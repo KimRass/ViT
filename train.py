@@ -15,9 +15,9 @@ import config
 from utils import get_elapsed_time
 from model import ViT
 from loss import ClassificationLoss
-from cifar10 import CIFAR10Dataset
-from cifar100 import CIFAR100Dataset
-from evaluate import TopKAccuracy
+from cifar10 import get_cifar10_dses
+from cifar100 import get_cifar100_dses
+from eval import TopKAccuracy
 from hide_and_seek import apply_hide_and_seek
 from cutmix import apply_cutmix
 from cutout import apply_cutout
@@ -44,18 +44,18 @@ def save_checkpoint(epoch, model, optim, scaler, avg_acc, ckpt_path):
 
 
 @torch.no_grad()
-def validate(test_dl, model, metric):
+def validate(dl, model, metric):
     print(f"""Validating...""")
     model.eval()
     sum_acc = 0
-    for image, gt in test_dl:
+    for image, gt in dl:
         image = image.to(config.DEVICE)
         gt = gt.to(config.DEVICE)
 
         pred = model(image)
         acc = metric(pred=pred, gt=gt)
         sum_acc += acc
-    avg_acc = sum_acc / len(test_dl)
+    avg_acc = sum_acc / len(dl)
     print(f"""Average accuracy: {avg_acc:.3f}""")
 
     model.train()
@@ -68,14 +68,12 @@ if __name__ == "__main__":
     print(f"""AUTOCAST = {config.AUTOCAST}""")
     print(f"""BATCH_SIZE = {config.BATCH_SIZE}""")
 
-    train_ds = CIFAR100Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="train")
+    train_ds, val_ds, test_ds = get_cifar10_dses(data_dir=config.DATA_DIR, val_ratio=config.VAL_RATIO)
     train_dl = DataLoader(
         train_ds, batch_size=config.BATCH_SIZE, shuffle=True, pin_memory=True, drop_last=True,
     )
-
-    test_ds = CIFAR100Dataset(config.DATA_DIR, mean=config.MEAN, std=config.STD, split="test")
-    test_dl = DataLoader(
-        test_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=True,
+    val_dl = DataLoader(
+        val_ds, batch_size=config.BATCH_SIZE, shuffle=False, pin_memory=True, drop_last=True,
     )
 
     model = ViT(
@@ -179,7 +177,7 @@ if __name__ == "__main__":
             start_time = time()
 
         if (epoch % config.N_VAL_EPOCHS == 0) or (epoch == config.N_EPOCHS):
-            avg_acc = validate(test_dl=test_dl, model=model, metric=metric)
+            avg_acc = validate(dl=val_dl, model=model, metric=metric)
             if avg_acc > best_avg_acc:
                 cur_ckpt_path = config.CKPT_DIR/f"""epoch_{epoch}_avg_acc_{round(avg_acc, 3)}.pth"""
                 save_checkpoint(

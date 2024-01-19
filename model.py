@@ -1,5 +1,6 @@
 # Reference
     # https://github.com/lucidrains/vit-pytorch/blob/main/vit_pytorch/vit.py
+    # https://github.com/huggingface/transformers/blob/main/src/transformers/models/vit/modeling_vit.py#L82
 
 import torch
 import torch.nn as nn

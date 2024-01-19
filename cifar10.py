@@ -1,7 +1,7 @@
 # Source: https://www.cs.toronto.edu/~kriz/cifar.html
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import torchvision.transforms as T
 from PIL import Image
 from pathlib import Path
@@ -11,7 +11,7 @@ import numpy as np
 import config
 
 
-def _get_images_and_gts(data_path):
+def get_cifar10_imgs_and_gts(data_path):
     with open(data_path, mode="rb") as f:
         data_dic = pickle.load(f, encoding="bytes")
 
@@ -20,27 +20,47 @@ def _get_images_and_gts(data_path):
     imgs = imgs.transpose(0, 2, 3, 1)
 
     gts = data_dic[b"labels"]
+    gts = np.array(gts)
+    return imgs, gts
+    
+
+def get_cifar10_train_val_set(data_dir):
+    imgs_ls = list()
+    gts_ls = list()
+    for idx in range(1, 6):
+        imgs, gts = get_cifar10_imgs_and_gts(Path(data_dir)/f"data_batch_{idx}")
+        imgs_ls.append(imgs)
+        gts_ls.append(gts)
+    imgs = np.concatenate(imgs_ls, axis=0)
+    gts = np.concatenate(gts_ls, axis=0)
     return imgs, gts
 
 
-def _get_cifar10_images_and_gts(data_dir, split="train"):
-    if split == "train":
-        imgs_ls = list()
-        gts_ls = list()
-        for idx in range(1, 6):
-            imgs, gts = _get_images_and_gts(Path(data_dir)/f"""data_batch_{idx}""")
-            imgs_ls.append(imgs)
-            gts_ls.append(gts)
-        imgs = np.concatenate(imgs_ls, axis=0)
-        gts = np.concatenate(gts_ls, axis=0)
-    elif split == "test":
-        imgs, gts = _get_images_and_gts(Path(data_dir)/"test_batch")
-    return imgs, gts
+def split_into_train_and_val(imgs, gts, val_ratio):
+    tot_size = len(imgs)
+    val_size = int(tot_size * val_ratio)
+    indices = np.arange(tot_size)
+    np.random.shuffle(indices)
+    
+    imgs = imgs[indices]
+    gts = gts[indices]
+    train_imgs = imgs[: -val_size, ...]
+    train_gts = gts[: -val_size, ...]
+    val_imgs = imgs[val_size:, ...]
+    val_gts = gts[val_size:, ...]
+    return train_imgs, train_gts, val_imgs, val_gts
 
 
-def get_cifar10_mean_and_std(data_dir, split="train"):
-    imgs, _ = _get_cifar10_images_and_gts(data_dir=data_dir, split=split)
+def get_all_cifar10_imgs_and_gts(data_dir, val_ratio):
+    train_val_imgs, train_val_gts = get_cifar10_train_val_set(data_dir)
+    train_imgs, train_gts, val_imgs, val_gts = split_into_train_and_val(
+        imgs=train_val_imgs, gts=train_val_gts, val_ratio=val_ratio,
+    )
+    test_imgs, test_gts = get_cifar10_imgs_and_gts(Path(data_dir)/"test_batch")
+    return train_imgs, train_gts, val_imgs, val_gts, test_imgs, test_gts
 
+
+def get_cifar_mean_and_std(imgs):
     imgs = imgs.astype("float") / 255
     n_pixels = imgs.size // 3
     sum_ = imgs.reshape(-1, 3).sum(axis=0)
@@ -50,11 +70,12 @@ def get_cifar10_mean_and_std(data_dir, split="train"):
     return mean, std
 
 
-class CIFAR10Dataset(Dataset):
-    def __init__(self, data_dir, mean, std, split="train"):
+class CIFARDataset(Dataset):
+    def __init__(self, imgs, gts, mean, std):
         super().__init__()
 
-        self.imgs, self.gts = _get_cifar10_images_and_gts(data_dir=data_dir, split=split)
+        self.imgs = imgs
+        self.gts = gts
 
         self.transform = T.Compose([
             T.RandomHorizontalFlip(p=0.5),
@@ -80,11 +101,17 @@ class CIFAR10Dataset(Dataset):
         return image, gt
 
 
-if __name__ == "__main__":
-    ds = CIFAR10Dataset(config.DATA_DIR, split="train")
-    for _ in range(10):
-        image, gt = ds[100]
-    dl = DataLoader(ds, batch_size=1, shuffle=False)
-    di = iter(dl)
+def get_cifar10_dses(data_dir, val_ratio=0.1):
+    train_imgs, train_gts, val_imgs, val_gts, test_imgs, test_gts = get_all_cifar10_imgs_and_gts(
+            data_dir=data_dir, val_ratio=val_ratio,
+    )
+    mean, std = get_cifar_mean_and_std(train_imgs)
+    train_ds = CIFARDataset(imgs=train_imgs, gts=train_gts, mean=mean, std=std)
+    val_ds = CIFARDataset(imgs=val_imgs, gts=val_gts, mean=mean, std=std)
+    test_ds = CIFARDataset(imgs=test_imgs, gts=test_gts, mean=mean, std=std)
+    return train_ds, val_ds, test_ds
 
-    image, gt = next(di)
+
+if __name__ == "__main__":
+    data_dir = "/Users/jongbeomkim/Documents/datasets/cifar-10-batches-py"
+    train_ds, val_ds, test_ds = get_cifar10_dses(data_dir=data_dir, val_ratio=0.1)

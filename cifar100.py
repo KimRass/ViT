@@ -1,18 +1,14 @@
 # Source: https://www.cs.toronto.edu/~kriz/cifar.html
 
-import torch
-from torch.utils.data import Dataset, DataLoader
-import torchvision.transforms as T
-import torchvision.transforms.functional as TF
-from torchvision.utils import make_grid
-from PIL import Image
 from pathlib import Path
 import pickle
+import numpy as np
 
 import config
+from cifar10 import CIFARDataset, split_into_train_and_val, get_cifar_mean_and_std
 
 
-def _get_images_and_gts(data_path):
+def get_cifar100_imgs_and_gts(data_path):
     with open(data_path, mode="rb") as f:
         data_dic = pickle.load(f, encoding="bytes")
 
@@ -21,50 +17,30 @@ def _get_images_and_gts(data_path):
     imgs = imgs.transpose(0, 2, 3, 1)
 
     gts = data_dic[b"fine_labels"]
+    gts = np.array(gts)
     return imgs, gts
 
 
-def _get_cifar100_images_and_gts(data_dir, split="train"):
-    imgs, gts = _get_images_and_gts(Path(data_dir)/split)
-    return imgs, gts
+def get_all_cifar100_imgs_and_gts(data_dir, val_ratio):
+    train_val_imgs, train_val_gts = get_cifar100_imgs_and_gts(Path(data_dir)/"train")
+    train_imgs, train_gts, val_imgs, val_gts = split_into_train_and_val(
+        imgs=train_val_imgs, gts=train_val_gts, val_ratio=val_ratio,
+    )
+    test_imgs, test_gts = get_cifar100_imgs_and_gts(Path(data_dir)/"test")
+    return train_imgs, train_gts, val_imgs, val_gts, test_imgs, test_gts
 
 
-def get_cifar100_mean_and_std(data_dir, split="train"):
-    imgs, _ = _get_cifar100_images_and_gts(data_dir=data_dir, split=split)
+def get_cifar100_dses(data_dir, val_ratio=0.1):
+    train_imgs, train_gts, val_imgs, val_gts, test_imgs, test_gts = get_all_cifar100_imgs_and_gts(
+            data_dir=data_dir, val_ratio=val_ratio,
+    )
+    mean, std = get_cifar_mean_and_std(train_imgs)
+    train_ds = CIFARDataset(imgs=train_imgs, gts=train_gts, mean=mean, std=std)
+    val_ds = CIFARDataset(imgs=val_imgs, gts=val_gts, mean=mean, std=std)
+    test_ds = CIFARDataset(imgs=test_imgs, gts=test_gts, mean=mean, std=std)
+    return train_ds, val_ds, test_ds
 
-    imgs = imgs.astype("float") / 255
-    n_pixels = imgs.size // 3
-    sum_ = imgs.reshape(-1, 3).sum(axis=0)
-    sum_square = (imgs ** 2).reshape(-1, 3).sum(axis=0)
-    mean = (sum_ / n_pixels).round(3)
-    std = (((sum_square / n_pixels) - mean ** 2) ** 0.5).round(3)
-    return mean, std
 
-
-class CIFAR100Dataset(Dataset):
-    def __init__(self, data_dir, mean, std, split="train"):
-        super().__init__()
-
-        self.imgs, self.gts = _get_cifar100_images_and_gts(data_dir=data_dir, split=split)
-
-        self.transform = T.Compose([
-            T.RandomHorizontalFlip(p=0.5),
-            T.RandomApply(
-                [T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2)],
-                p=0.5,
-            ),
-            T.ToTensor(),
-            T.Normalize(mean=mean, std=std),
-        ])
-
-    def __len__(self):
-        return len(self.gts)
-
-    def __getitem__(self, idx):
-        img = self.imgs[idx]
-        image = Image.fromarray(img)
-        image = self.transform(image)
-
-        gt = self.gts[idx]
-        gt = torch.tensor(gt).long()
-        return image, gt
+if __name__ == "__main__":
+    data_dir = "/Users/jongbeomkim/Documents/datasets/cifar-100-python"
+    train_ds, val_ds, test_ds = get_cifar100_dses(data_dir=data_dir, val_ratio=0.1)
