@@ -3,9 +3,10 @@
 from pathlib import Path
 import pickle
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 import config
-from cifar10 import CIFARDataset, split_into_train_and_val, get_cifar_mean_and_std
+from cifar10 import CIFARDataset, get_cifar_mean_and_std
 
 
 def get_cifar100_imgs_and_gts(data_path):
@@ -23,8 +24,8 @@ def get_cifar100_imgs_and_gts(data_path):
 
 def get_all_cifar100_imgs_and_gts(data_dir, val_ratio):
     train_val_imgs, train_val_gts = get_cifar100_imgs_and_gts(Path(data_dir)/"train")
-    train_imgs, train_gts, val_imgs, val_gts = split_into_train_and_val(
-        imgs=train_val_imgs, gts=train_val_gts, val_ratio=val_ratio,
+    train_imgs, val_imgs, train_gts, val_gts = train_test_split(
+        train_val_imgs, train_val_gts, test_size=val_ratio,
     )
     test_imgs, test_gts = get_cifar100_imgs_and_gts(Path(data_dir)/"test")
     return train_imgs, train_gts, val_imgs, val_gts, test_imgs, test_gts

@@ -7,6 +7,7 @@ from PIL import Image
 from pathlib import Path
 import pickle
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 import config
 
@@ -36,25 +37,10 @@ def get_cifar10_train_val_set(data_dir):
     return imgs, gts
 
 
-def split_into_train_and_val(imgs, gts, val_ratio):
-    tot_size = len(imgs)
-    val_size = int(tot_size * val_ratio)
-    indices = np.arange(tot_size)
-    np.random.shuffle(indices)
-    
-    imgs = imgs[indices]
-    gts = gts[indices]
-    train_imgs = imgs[: -val_size, ...]
-    train_gts = gts[: -val_size, ...]
-    val_imgs = imgs[val_size:, ...]
-    val_gts = gts[val_size:, ...]
-    return train_imgs, train_gts, val_imgs, val_gts
-
-
 def get_all_cifar10_imgs_and_gts(data_dir, val_ratio):
     train_val_imgs, train_val_gts = get_cifar10_train_val_set(data_dir)
-    train_imgs, train_gts, val_imgs, val_gts = split_into_train_and_val(
-        imgs=train_val_imgs, gts=train_val_gts, val_ratio=val_ratio,
+    train_imgs, val_imgs, train_gts, val_gts = train_test_split(
+        train_val_imgs, train_val_gts, test_size=val_ratio,
     )
     test_imgs, test_gts = get_cifar10_imgs_and_gts(Path(data_dir)/"test_batch")
     return train_imgs, train_gts, val_imgs, val_gts, test_imgs, test_gts
