@@ -57,6 +57,16 @@ def _to_3d(img):
         return img
 
 
+def _rgba_to_rgb(img):
+    copied = img.copy().astype("float")
+    copied[..., 0] *= copied[..., 3] / 255
+    copied[..., 1] *= copied[..., 3] / 255
+    copied[..., 2] *= copied[..., 3] / 255
+    copied = copied.astype("uint8")
+    copied = copied[..., : 3]
+    return copied
+
+
 def _preprocess_image(img):
     if img.dtype == "bool":
         img = img.astype("uint8") * 255

@@ -56,7 +56,6 @@ class AttentionRollout:
                 module.fused_attn = False
 
         self.attn_mats = list()
-
         for name, module in self.model.named_modules():
             if re.search(pattern=attn_layer_regex, string=name):
                 module.register_forward_hook(self._save_attention_matrices)
