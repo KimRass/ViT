@@ -68,16 +68,15 @@ class AttentionRollout:
         self.model.eval()
         with torch.no_grad():
             self.model(image)
-        return self.attn_mats
 
     def get_attention_map(
         self, img, head_fusion="min", discard_ratio: float=0.9,
     ):
         image = self.transform(_to_pil(img)).unsqueeze(0)
-        attn_mats = attn_rollout._get_attention_matrices(image)
+        attn_rollout._get_attention_matrices(image)
 
-        attn_map = torch.eye(attn_mats[0].squeeze().shape[1])
-        for attn_mat in attn_mats:
+        attn_map = torch.eye(self.attn_mats[0].squeeze().shape[1])
+        for attn_mat in self.attn_mats:
             # At every Transformer block we get an attention matrix $A_{ij}$
             # that defines how much attention is going to flow from token $j$ in the previous layer
             # to token $i$ in the next layer.
