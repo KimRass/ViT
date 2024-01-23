@@ -9,7 +9,6 @@ import torchvision.transforms as T
 import numpy as np
 import cv2
 import re
-from typing import Literal
 import ssl
 from pathlib import Path
 import argparse
@@ -43,11 +42,7 @@ def get_args():
 
 
 class AttentionRollout:
-    def __init__(
-        self,
-        model: nn.Module,
-        attn_layer_regex: str=r"(.attn_drop)$",
-    ):
+    def __init__(self, model, attn_layer_regex=r"(.attn_drop)$"):
         self.model = model
         self.attn_layer_regex = attn_layer_regex
 
@@ -76,10 +71,7 @@ class AttentionRollout:
         return self.attn_mats
 
     def get_attention_map(
-        self,
-        img: np.ndarray,
-        head_fusion: Literal["mean", "max", "min", "sum"]="min",
-        discard_ratio: float=0.9,
+        self, img, head_fusion="min", discard_ratio: float=0.9,
     ):
         image = self.transform(_to_pil(img)).unsqueeze(0)
         attn_mats = attn_rollout._get_attention_matrices(image)
