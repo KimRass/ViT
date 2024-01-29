@@ -19,7 +19,8 @@ class CELossWithLabelSmoothing(nn.Module):
         
     def forward(self, pred, gt):
         if gt.ndim == 1:
-            return self(pred, torch.eye(3)[gt])
+            gt = torch.eye(self.n_classes, device=gt.device)[gt]
+            return self(pred, gt)
         elif gt.ndim == 2:
             log_prob = F.log_softmax(pred, dim=1)
             ce_loss = -torch.sum(gt * log_prob, dim=1)
