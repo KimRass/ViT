@@ -3,8 +3,29 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 import config
+
+
+class CELossWithLabelSmoothing(nn.Module):
+    def __init__(self, n_classes, smoothing=0):
+        super().__init__()
+
+        assert 0 <= smoothing <= 1, "The argument `smoothing` must be between 0 and 1!"
+
+        self.n_classes = n_classes
+        self.smoothing = smoothing
+        
+    def forward(self, pred, gt):
+        if gt.ndim == 1:
+            return self(pred, torch.eye(3)[gt])
+        elif gt.ndim == 2:
+            log_prob = F.log_softmax(pred, dim=1)
+            ce_loss = -torch.sum(gt * log_prob, dim=1)
+            loss = (1 - self.smoothing) * ce_loss
+            loss += self.smoothing * -torch.sum(log_prob, dim=1)
+            return torch.mean(loss)
 
 
 class ClassificationLoss(nn.Module):

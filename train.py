@@ -14,7 +14,7 @@ from pathlib import Path
 import config
 from utils import get_elapsed_time
 from model import ViT
-from loss import ClassificationLoss
+from loss import CELossWithLabelSmoothing
 from cifar10 import get_cifar10_dses
 from cifar100 import get_cifar100_dses
 from eval import TopKAccuracy
@@ -90,7 +90,7 @@ if __name__ == "__main__":
         if config.MULTI_GPU:
             model = nn.DataParallel(model)
 
-    crit = ClassificationLoss(n_classes=config.N_CLASSES, smoothing=config.SMOOTHING)
+    crit = CELossWithLabelSmoothing(n_classes=config.N_CLASSES, smoothing=config.SMOOTHING)
     metric = TopKAccuracy(k=1)
 
     optim = Adam(
