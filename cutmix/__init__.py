@@ -4,7 +4,9 @@ import random
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as T
-from PIL import Image
+
+
+from utils import image_to_grid
 
 
 def apply_cutmix(image, gt, n_classes):
@@ -42,12 +44,19 @@ if __name__ == "__main__":
         ]
     )
     ds = ImageFolder("/Users/jongbeomkim/Documents/datasets/imagenet-mini/val", transform=transform)
-    dl = DataLoader(dataset=ds, batch_size=16, shuffle=True, num_workers=4, drop_last=True)
+    dl = DataLoader(dataset=ds, batch_size=16, shuffle=True, num_workers=0, drop_last=True)
     n_classes = len(ds.classes)
     for batch, (image, gt) in enumerate(dl, start=1):
         gt = F.one_hot(gt, num_classes=n_classes)
         image, gt = apply_cutmix(image=image, gt=gt, n_classes=n_classes)
-        # grid = get_image_grid(image)
+        grid = image_to_grid(
+            image,
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225],
+            n_cols=4,
+        )
+        grid.show()
+        break
 
         # save_image(
         #     img=grid,

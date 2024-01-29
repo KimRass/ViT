@@ -1,5 +1,7 @@
 import cv2
 from PIL import Image
+from torchvision.utils import make_grid
+import torchvision.transforms.functional as TF
 import numpy as np
 from time import time
 from datetime import timedelta
@@ -117,3 +119,18 @@ def save_image(img1, img2=None, alpha=0.5, path="") -> None:
         cv2.imwrite(
             filename=str(path), img=img_arr, params=[cv2.IMWRITE_JPEG_QUALITY, 100]
         )
+
+
+def denorm(tensor, mean, std):
+    return TF.normalize(
+        tensor, mean=- np.array(mean) / np.array(std), std=1 / np.array(std),
+    )
+
+
+def image_to_grid(image, mean, std, n_cols, padding=1):
+    tensor = image.clone().detach().cpu()
+    tensor = denorm(tensor, mean=mean, std=std)
+    grid = make_grid(tensor, nrow=n_cols, padding=1, pad_value=padding)
+    grid.clamp_(0, 1)
+    grid = TF.to_pil_image(grid)
+    return grid
